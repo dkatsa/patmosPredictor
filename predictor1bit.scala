@@ -62,7 +62,7 @@ class predictor1bit() extends Module {
    
    
    // Logic to control the manual flush
-   when( predictor_decEx === UInt(1) ){
+   when( predictor_decEx === UInt(1) && found_decEx === UInt(1) ){
       when( io.exfe.doBranch === UInt(1) ){
         io.correct_PC := UInt(0)
         io.prex.override_brflush := Bool(true)
