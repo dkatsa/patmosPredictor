@@ -45,7 +45,7 @@ import Node._
 
 import Constants._
 
-class Execute() extends Module { //test
+class Execute() extends Module {
   val io = new ExecuteIO()
 
   val exReg = Reg(new DecEx())
