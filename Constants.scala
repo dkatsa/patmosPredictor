@@ -81,7 +81,7 @@ object Constants {
 
   
   // Customization 2017 
-  val PREDICTOR_INDEX = 30
+  val PREDICTOR_INDEX = 6
   val PREDICTOR_WIDTH = 1
   
   

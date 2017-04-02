@@ -62,22 +62,26 @@ class predictor1bit() extends Module {
    
    
    // Logic to control the manual flush
-   when( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(1) ){
-      io.correct_PC := UInt(0)
-      io.override_brflush = Bool(true)
-      io.override_brflush_value = Bool(false)
-   }.elsewhen( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
-      io.correct_PC := UInt(1)
-      io.override_brflush = Bool(true)
-      io.override_brflush_value = Bool(true)
-   }.unless( predictor_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){
-      io.correct_PC := UInt(0)
-      io.override_brflush = Bool(false)
-      io.override_brflush_value = Bool(false)
-   }.otherwise{ // all zeros
-      io.correct_PC := UInt(0)
-      io.override_brflush = Bool(false)
-      io.override_brflush_value = Bool(false)
+   when( predictor_decEx === UInt(1) ){
+      when( io.exfe.doBranch === UInt(1) ){
+        io.correct_PC := UInt(0)
+        io.prex.override_brflush := Bool(true)
+        io.prex.override_brflush_value := Bool(false)
+       }.otherwise{ 
+        io.correct_PC := UInt(1)
+        io.prex.override_brflush := Bool(true)
+        io.prex.override_brflush_value := Bool(true)
+      }
+   } .otherwise{
+//         when( io.exfe.doBranch === UInt(1) ){
+//             io.correct_PC := UInt(0)
+//             io.prex.override_brflush := Bool(false)
+//             io.prex.override_brflush_value := Bool(false)
+//         } .otherwise{ // all zeros
+            io.correct_PC := UInt(0)
+            io.prex.override_brflush := Bool(false)
+            io.prex.override_brflush_value := Bool(false)
+//         }
    }
    
    // The pointer increases one each time a new write operations occurs
@@ -89,8 +93,9 @@ class predictor1bit() extends Module {
       predictor(UInt(pointer)) := io.exfe.doBranch
    }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) ){   
       when( io.exfe.doBranch =/= predictor(index_decEx) )
+      {
          predictor(index_decEx) := ~predictor(index_decEx)
-      )
+      }
    }.otherwise{
       pointer := pointer 
       PC_Reg(UInt(pointer)) := PC_Reg(UInt(pointer))

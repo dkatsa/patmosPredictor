@@ -90,8 +90,7 @@ class PatmosCore(binFile: String) extends Module {
   // Inputs
   pythia.io.PC_Fe <> fetch.io.PC_Fe
   pythia.io.isBranch_Dec <> decode.io.isOneOfTheBranches
-  pythia.io.isFlush_Ex <> execute.io.doBranch
-  pythia.io.target_Ex <> execute.io.branchPC
+  pythia.io.exfe <> execute.io.exfe
   // Outputs
   execute.io.prex <> pythia.io.prex
   fetch.io.correct_PC <> pythia.io.correct_PC

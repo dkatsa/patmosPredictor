@@ -387,7 +387,7 @@ class Execute() extends Module {
   
   
   // Customization 2017 \/\/\/\/\/\/\/
-  io.brflush := Mux( io.override_brflush, io.override_brflush_value,
+  io.brflush := Mux( io.prex.override_brflush, io.prex.override_brflush_value,
                 exReg.nonDelayed && exReg.jmpOp.branch && doExecute(0))
   // Customization 2017 /\/\/\/\/\/\/\
 

@@ -348,7 +348,7 @@ class DecodeIO() extends Bundle() {
   val rfWrite =  Vec.fill(PIPE_COUNT) { new Result().asInput }
   val exc = new ExcDec().asInput
   // Customization 2017 
-  val isOneOfTheBranches = UInt(Output, 1)
+  val isOneOfTheBranches = UInt(OUTPUT, 1)
 }
 
 class ExecuteIO() extends Bundle() {
