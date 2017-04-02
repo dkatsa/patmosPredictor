@@ -367,6 +367,13 @@ class ExecuteIO() extends Bundle() {
   //stack cache
   val exsc = new ExSc().asOutput
   val scex = new ScEx().asInput
+  val prex = new PrEx().asInput // Customization 2017
+}
+
+// Customization 2017
+class PrEx() extends Bundle() {
+  val override_brflush = Bool()
+  val override_brflush_value = Bool()
 }
 
 class InOutIO() extends Bundle() {

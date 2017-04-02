@@ -18,6 +18,7 @@ class predictor1bit() extends Module {
       val choose_PC = UInt(OUTPUT, 1)
       val target_out = UInt(OUTPUT, PC_SIZE) 
       val correct_PC = UInt(OUTPUT, 1)
+      val prex = new PrEx().asOutput 
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -57,13 +58,27 @@ class predictor1bit() extends Module {
    io.choose_PC := found_feDec === UInt(1) && predictor_feDec === UInt(1) 
    io.target_out := target_feDec
    
-   when( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
-      io.correct_PC := UInt(1) 
-   }.otherwise{
-      io.correct_PC := UInt(0)
-   }
    
-   // manually flush
+   
+   
+   // Logic to control the manual flush
+   when( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(1) ){
+      io.correct_PC := UInt(0)
+      io.override_brflush = Bool(true)
+      io.override_brflush_value = Bool(false)
+   }.elsewhen( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
+      io.correct_PC := UInt(1)
+      io.override_brflush = Bool(true)
+      io.override_brflush_value = Bool(true)
+   }.unless( predictor_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){
+      io.correct_PC := UInt(0)
+      io.override_brflush = Bool(false)
+      io.override_brflush_value = Bool(false)
+   }.otherwise{ // all zeros
+      io.correct_PC := UInt(0)
+      io.override_brflush = Bool(false)
+      io.override_brflush_value = Bool(false)
+   }
    
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!

@@ -384,7 +384,12 @@ class Execute() extends Module {
                    exReg.jmpOp.target,
                    op(0)(DATA_WIDTH-1, 2).toUInt - exReg.jmpOp.reloc)
   io.exfe.branchPc := target
-  io.brflush := exReg.nonDelayed && exReg.jmpOp.branch && doExecute(0)
+  
+  
+  // Customization 2017 \/\/\/\/\/\/\/
+  io.brflush := Mux( io.override_brflush, io.override_brflush_value,
+                exReg.nonDelayed && exReg.jmpOp.branch && doExecute(0))
+  // Customization 2017 /\/\/\/\/\/\/\
 
   // pass on PC
   io.exmem.pc := exReg.pc
