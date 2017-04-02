@@ -1,16 +1,20 @@
+package patmos
+
 import Chisel._
 import Node._
 import Constants._
 // import util.log2Up
 // import Constants._
 
-class predictor1bit(PC_SIZE: Int , PREDICTOR_INDEX: Int , PREDICTOR_WIDTH: Int) extends Module {
+class predictor1bit() extends Module {
+// class predictor1bit(PC_SIZE: Int , PREDICTOR_INDEX: Int , PREDICTOR_WIDTH: Int) extends Module {
    val io = new Bundle {
       val PC_Fe = UInt(INPUT, PC_SIZE) // PC 
       val isBranch_Dec = UInt(INPUT, 1) // Identify branches from Decode
-      val isFlush_Ex = UInt(INPUT, 1) // TODO : find which signal generate flush!
-      val target_Ex = UInt(INPUT, PC_SIZE) 
-      //
+//       val isFlush_Ex = UInt(INPUT, 1) // TODO : find which signal generate flush!
+//       val target_Ex = UInt(INPUT, PC_SIZE) 
+      // branch from EX
+      val exfe = new ExFe().asInput
       val choose_PC = UInt(OUTPUT, 1)
       val target_out = UInt(OUTPUT, PC_SIZE) 
    }
@@ -47,20 +51,28 @@ class predictor1bit(PC_SIZE: Int , PREDICTOR_INDEX: Int , PREDICTOR_WIDTH: Int) 
    val target_feDec = Reg(init = UInt(0, PC_SIZE), next = targetPC_Reg(OHToUInt(found)) )
    val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor(OHToUInt(found))  )
    val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor_feDec  )
+   // We will science the shit out of it!!!!!!!!!!!!
    
-   io.choose_PC := found_feDec === UInt(1)  && predictor_feDec === UInt(1) 
+   io.choose_PC := found_feDec === UInt(1) && predictor_feDec === UInt(1) 
    io.target_out := target_feDec
-  
+   
+   //store PC from Fetch to Execute
+   // when ( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
+      // 1) Reload the stored PC back to fetch
+      // 2) manually flush
+   // }
    
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!
    when( isBranch_decEx === UInt(1) && found_decEx === UInt(0) ){
       pointer  := pointer + UInt(1)
       PC_Reg(UInt(pointer)) := PC_decEx
-      targetPC_Reg(UInt(pointer)) := io.target_Ex
-      predictor(UInt(pointer)) := io.isFlush_Ex
-   }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) && io.isFlush_Ex === UInt(1) ){
-      predictor(index_decEx) := ~predictor(index_decEx)
+      targetPC_Reg(UInt(pointer)) := io.exfe.branchPc
+      predictor(UInt(pointer)) := io.exfe.doBranch
+   }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) ){   
+      when( io.exfe.doBranch =/= predictor(index_decEx) )
+         predictor(index_decEx) := ~predictor(index_decEx)
+      )
    }.otherwise{
       pointer := pointer 
       PC_Reg(UInt(pointer)) := PC_Reg(UInt(pointer))
