@@ -17,6 +17,7 @@ class predictor1bit() extends Module {
       val exfe = new ExFe().asInput
       val choose_PC = UInt(OUTPUT, 1)
       val target_out = UInt(OUTPUT, PC_SIZE) 
+      val correct_PC = UInt(OUTPUT, 1)
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -56,11 +57,13 @@ class predictor1bit() extends Module {
    io.choose_PC := found_feDec === UInt(1) && predictor_feDec === UInt(1) 
    io.target_out := target_feDec
    
-   //store PC from Fetch to Execute
-   // when ( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
-      // 1) Reload the stored PC back to fetch
-      // 2) manually flush
-   // }
+   when( predictor_decEx === UInt(1) && io.exfe.doBranch === UInt(0) ){
+      io.correct_PC := UInt(1) 
+   }.otherwise{
+      io.correct_PC := UInt(0)
+   }
+   
+   // manually flush
    
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!

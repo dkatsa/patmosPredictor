@@ -121,6 +121,19 @@ class Fetch(fileName : String) extends Module {
   val instr_a_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrEven, io.icachefe.instrOdd)
   val instr_b_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrOdd, io.icachefe.instrEven)
 
+  
+   // Customization 2017 \/\/\/\/\/\/\/
+   val pc_next_Even = Mux(io.exfe.doBranch, io.exfe.branchPc + UInt(2), pc_cont2)
+   val pc_next_Odd = Mux(io.exfe.doBranch, io.exfe.branchPc, pc_cont)
+   // Stored and delayed the original PCs 
+   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Even)
+   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
+  
+   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
+   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
+   
+   // Customization 2017 /\/\/\/\/\/\/\
+  
   //Icache/ISPM/ROM Mux
   val instr_a = Mux(selSpm, instr_a_ispm,
                     Mux(selCache, instr_a_cache, instr_a_rom))
@@ -130,17 +143,18 @@ class Fetch(fileName : String) extends Module {
   val b_valid = instr_a(31) === Bits(1)
 
   val pc_cont = Mux(b_valid, pcReg + UInt(2), pcReg + UInt(1))
+  // Customization 2017.1
   val pc_next =
-    Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
-            Mux(io.choose_PC === UInt(1),io.target_out,   // Customization 2017.1
-            Mux(io.exfe.doBranch, io.exfe.branchPc, 
-                pc_cont)))// Customization 2017.1 plus one parenthesis
+         Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
+         Mux(io.correct_PC === UInt(1), pcOdd_decEx, 
+         Mux(io.choose_PC === UInt(1),io.target_out,   
+         pc_next_Odd)) 
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next2 =
-    Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
-        Mux(io.choose_PC === UInt(1),io.target_out + UInt(2),   // Customization 2017.1
-        Mux(io.exfe.doBranch, io.exfe.branchPc + UInt(2),
-            pc_cont2))) // Customization 2017.1 plus one parenthesis
+         Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
+         Mux(io.correct_PC === UInt(1), pcEven_decEx, 
+         Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), 
+         pc_next_Even)) 
 
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
   addrEven := addrEvenReg

@@ -93,6 +93,7 @@ class PatmosCore(binFile: String) extends Module {
   pythia.io.isFlush_Ex <> execute.io.doBranch
   pythia.io.target_Ex <> execute.io.branchPC
   // Outputs
+  fetch.io.correct_PC <> pythia.io.correct_PC
   fetch.io.choose_PC <> pythia.io.choose_PC
   fetch.io.target_out <> pythia.io.target_out
   // Customization 2017  /\/\/\/\/\

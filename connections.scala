@@ -326,6 +326,7 @@ class FetchIO extends Bundle() {
   val PC_Fe = UInt(OUTPUT, PC_SIZE)
   val choose_PC = UInt(INPUT, 1)
   val target_out = UInt(INPUT, PC_SIZE) 
+  val correct_PC = UInt(INPUT, 1)
   
 }
 
