@@ -270,7 +270,7 @@ class Decode() extends Module {
   // Customization 2017 /\/\/\/\/\/\
   //io.isOneOfTheBranches := (opcode === OPCODE_CFL_BRND )
   
-   when(opcode === OPCODE_CFL_BRND) {
+   when(opcode === OPCODE_CFL_BR || opcode === OPCODE_CFL_BRND ) {
         io.isOneOfTheBranches := Bool(true)
   } .otherwise{
         io.isOneOfTheBranches := Bool(false)

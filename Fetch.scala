@@ -171,11 +171,7 @@ class Fetch(fileName : String) extends Module {
   io.PC_Fe := pc_cont
   
  // Customization 2017 /\/\/\/\/\/\/\
-  
-  
-  
-  
-  
+ 
   io.fedec.pc := pcReg
   io.fedec.base := baseReg
   io.fedec.reloc := relocReg
