@@ -168,18 +168,9 @@ class Fetch(fileName : String) extends Module {
 
   
  // Customization 2017 \/\/\/\/\/\/\/
-  io.PC_Fe := pc_next//UInt(OUTPUT, PC_SIZE)
-  // io.choose_PC// = UInt(INPUT, 1)
-  // io.target_out// = UInt(INPUT, PC_SIZE) 
+  io.PC_Fe := pc_cont
   
  // Customization 2017 /\/\/\/\/\/\/\
-  
-  
-  
-  
-  
-  
-  
   
   
   

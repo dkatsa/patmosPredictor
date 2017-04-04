@@ -50,7 +50,7 @@ class predictor1bit() extends Module {
    val index_decEx = Reg(init = UInt(0, PREDICTOR_INDEX), next =  index_feDec )
    
  
-   val target_feDec = Reg(init = UInt(0, PC_SIZE), next = targetPC_Reg(OHToUInt(found)) )
+   val target_feDec = Reg(init = UInt(0, PC_SIZE), next = targetPC_Reg(OHToUInt(found)) ) // TODO Compare new with old target.
    val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor(OHToUInt(found))  )
    val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor_feDec  )
    // We will science the shit out of it!!!!!!!!!!!!
@@ -92,8 +92,7 @@ class predictor1bit() extends Module {
       targetPC_Reg(UInt(pointer)) := io.exfe.branchPc
       predictor(UInt(pointer)) := io.exfe.doBranch
    }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) ){   
-      when( io.exfe.doBranch =/= predictor(index_decEx) )
-      {
+      when( io.exfe.doBranch =/= predictor(index_decEx) ){
          predictor(index_decEx) := ~predictor(index_decEx)
       }
    }.otherwise{
@@ -108,19 +107,19 @@ class predictor1bit() extends Module {
    // Find if there is the PC inside the CAM memory
    for (k <- 0 until ADDR) {
       // Read over Writing : Take the new data! Way too Expensive!
-      when( UInt(k, PREDICTOR_INDEX)  === pointer && isBranch_decEx === UInt(1) && found_decEx === UInt(0) ){
-         when (PC_decEx === io.PC_Fe) {
-            found(k) := UInt(1)
-         }.otherwise{
-            found(k) := UInt(0)
-         }
-      }.otherwise{
+      // when( UInt(k, PREDICTOR_INDEX)  === pointer && isBranch_decEx === UInt(1) && found_decEx === UInt(0) ){
+         // when (PC_decEx === io.PC_Fe) {
+            // found(k) := UInt(1)
+         // }.otherwise{
+            // found(k) := UInt(0)
+         // }
+      // }.otherwise{
          when (PC_Reg(UInt(k)) === io.PC_Fe) {
             found(k) := UInt(1)
          }.otherwise{
             found(k) := UInt(0)
          }
-      }
+      // }
    }
 }
 
