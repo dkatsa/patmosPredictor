@@ -136,7 +136,9 @@ class Fetch(fileName : String) extends Module {
 
   val pc_cont = Mux(b_valid, pcReg + UInt(2), pcReg + UInt(1))
   // Customization 2017.1      // Stored and delayed the original PCs   
-   val pc_next_Odd = Mux(io.exfe.doBranch, io.exfe.branchPc, pc_cont)  
+  val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
+  
+   val pc_next_Odd = Mux(override_branch, io.exfe.branchPc, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
    val pc_next =
@@ -145,7 +147,7 @@ class Fetch(fileName : String) extends Module {
          Mux(io.choose_PC === UInt(1),io.target_out,   
          pc_next_Odd)))
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
-  val pc_next_Even = Mux(io.exfe.doBranch, io.exfe.branchPc + UInt(2), pc_cont2)
+  val pc_next_Even = Mux(override_branch, io.exfe.branchPc + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Even)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
   val pc_next2 =

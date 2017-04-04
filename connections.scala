@@ -327,6 +327,7 @@ class FetchIO extends Bundle() {
   val choose_PC = UInt(INPUT, 1)
   val target_out = UInt(INPUT, PC_SIZE) 
   val correct_PC = UInt(INPUT, 1)
+  val prex = new PrEx().asInput // Customization 2017
   
 }
 
