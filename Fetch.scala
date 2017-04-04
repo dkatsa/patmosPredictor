@@ -139,7 +139,7 @@ class Fetch(fileName : String) extends Module {
    val pc_next_Odd = Mux(io.exfe.doBranch, io.exfe.branchPc, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
-  val pc_next =
+   val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, 
          Mux(io.choose_PC === UInt(1),io.target_out,   

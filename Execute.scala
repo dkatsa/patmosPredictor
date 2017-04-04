@@ -379,10 +379,13 @@ class Execute() extends Module {
   }
 
   // branch
-  io.exfe.doBranch := exReg.jmpOp.branch && doExecute(0)
+  // io.exfe.doBranch := exReg.jmpOp.branch && doExecute(0)
+  io.exfe.doBranch := Mux( io.prex.override_brflush, io.prex.override_brflush_value,
+                           exReg.jmpOp.branch && doExecute(0)) // Customization 2017
   val target = Mux(exReg.immOp(0),
                    exReg.jmpOp.target,
                    op(0)(DATA_WIDTH-1, 2).toUInt - exReg.jmpOp.reloc)
+  // io.exfe.branchPc := target
   io.exfe.branchPc := target
   
   
