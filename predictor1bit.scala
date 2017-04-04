@@ -3,16 +3,12 @@ package patmos
 import Chisel._
 import Node._
 import Constants._
-// import util.log2Up
-// import Constants._
 
 class predictor1bit() extends Module {
 // class predictor1bit(PC_SIZE: Int , PREDICTOR_INDEX: Int , PREDICTOR_WIDTH: Int) extends Module {
    val io = new Bundle {
       val PC_Fe = UInt(INPUT, PC_SIZE) // PC 
       val isBranch_Dec = UInt(INPUT, 1) // Identify branches from Decode
-//       val isFlush_Ex = UInt(INPUT, 1) // TODO : find which signal generate flush!
-//       val target_Ex = UInt(INPUT, PC_SIZE) 
       // branch from EX
       val exfe = new ExFe().asInput
       val choose_PC = UInt(OUTPUT, 1)
@@ -42,14 +38,11 @@ class predictor1bit() extends Module {
    
    val isBranch_decEx = Reg(init = UInt(0, 1), next = io.isBranch_Dec )
    
-   
-   
    val index = UInt(width = PREDICTOR_INDEX)
    index := OHToUInt(found)
    val index_feDec = Reg(init = UInt(0, PREDICTOR_INDEX), next =  index )
    val index_decEx = Reg(init = UInt(0, PREDICTOR_INDEX), next =  index_feDec )
    
- 
    val target_feDec = Reg(init = UInt(0, PC_SIZE), next = targetPC_Reg(OHToUInt(found)) ) // TODO Compare new with old target.
    val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor(OHToUInt(found))  )
    val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH), next =  predictor_feDec  )
@@ -57,9 +50,6 @@ class predictor1bit() extends Module {
    
    io.choose_PC := found_feDec === UInt(1) && predictor_feDec === UInt(1) 
    io.target_out := target_feDec
-   
-   
-   
    
    // Logic to control the manual flush
    when( predictor_decEx === UInt(1) && found_decEx === UInt(1) ){
@@ -122,22 +112,3 @@ class predictor1bit() extends Module {
       // }
    }
 }
-
-// object predictor1bit {
-   // def main(args: Array[String]): Unit = {
-      // chiselMain(Array("--backend", "v"), () => Module(new predictor1bit(6, 4, 1)))
-   // }
-// }
-
-
-// Notes Nice Syntax
-
-/*
-  val addrEven = UInt()
-  val addrOdd = UInt()
-  val addrEvenReg = Reg(init = UInt(2, PC_SIZE), next = addrEven)
-  val addrOddReg = Reg(init = UInt(1, PC_SIZE), next = addrOdd)
-*/
-
-
-
