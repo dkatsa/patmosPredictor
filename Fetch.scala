@@ -52,8 +52,10 @@ class Fetch(fileName : String) extends Module {
   val pcReg = Reg(init = UInt(1, PC_SIZE))
   val addrEven = UInt()
   val addrOdd = UInt()
-  val addrEvenReg = Reg(init = UInt(2, PC_SIZE), next = addrEven)
-  val addrOddReg = Reg(init = UInt(1, PC_SIZE), next = addrOdd)
+  val addrEvenReg = Reg(init = UInt(2, PC_SIZE) )
+  addrEvenReg := addrEven
+  val addrOddReg = Reg(init = UInt(1, PC_SIZE) )
+  addrOddReg := addrOdd
 
   val rom = Utility.readBin(fileName, INSTR_WIDTH)
   val romAddrBits = log2Up(rom.length / 2)
@@ -139,8 +141,10 @@ class Fetch(fileName : String) extends Module {
   val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
    val pc_next_Odd = Mux(override_branch, io.exfe.branchPc, pc_cont)  
-   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
-   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
+   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE) )
+   pcOdd_feDec := pc_next_Odd
+   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
+   pcOdd_decEx := pcOdd_feDec
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, 
@@ -148,8 +152,10 @@ class Fetch(fileName : String) extends Module {
          pc_next_Odd)))
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(override_branch, io.exfe.branchPc + UInt(2), pc_cont2)
-  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Even)
-  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
+  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE) )
+  pcEven_feDec := pc_next_Even
+  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
+  pcEven_decEx := pcEven_feDec
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx, 
