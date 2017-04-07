@@ -25,6 +25,7 @@ class predictor1bit() extends Module {
    // Pointer for the memory
    val pointer = Reg(init = UInt(0, PREDICTOR_INDEX)) 
    
+   assert(Bool(PC_Fe_sig === io.PC_Fe)
    val PC_Fe_sig = Reg(init = UInt(0, PC_SIZE), next = io.PC_Fe)
    val PC_feDec = Reg(init = UInt(0, PC_SIZE), next = PC_Fe_sig) // But why ????? one extra delay here !!!!
    val PC_decEx = Reg(init = UInt(0, PC_SIZE), next = PC_feDec)
