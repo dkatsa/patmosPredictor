@@ -25,7 +25,8 @@ class predictor1bit() extends Module {
    // Pointer for the memory
    val pointer = Reg(init = UInt(0, PREDICTOR_INDEX)) 
    
-   val PC_feDec = Reg(init = UInt(0, PC_SIZE), next = io.PC_Fe)
+   val PC_Fe_sig = Reg(init = UInt(0, PC_SIZE), next = io.PC_Fe)
+   val PC_feDec = Reg(init = UInt(0, PC_SIZE), next = PC_Fe_sig)
    val PC_decEx = Reg(init = UInt(0, PC_SIZE), next = PC_feDec)
    
    var found = UInt(width = ADDR) // One-hot signal to identify the data
