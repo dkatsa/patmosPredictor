@@ -26,7 +26,7 @@ class predictor1bit() extends Module {
    val pointer = Reg(init = UInt(0, PREDICTOR_INDEX)) 
    
    val PC_Fe_sig = Reg(init = UInt(0, PC_SIZE), next = io.PC_Fe)
-   val PC_feDec = Reg(init = UInt(0, PC_SIZE), next = PC_Fe_sig)
+   val PC_feDec = Reg(init = UInt(0, PC_SIZE), next = PC_Fe_sig) // But why ????? one extra delay here !!!!
    val PC_decEx = Reg(init = UInt(0, PC_SIZE), next = PC_feDec)
    
    var found = UInt(width = ADDR) // One-hot signal to identify the data
@@ -37,7 +37,8 @@ class predictor1bit() extends Module {
    val found_feDec = Reg(init = UInt(0, 1), next = found_OR)
    val found_decEx = Reg(init = UInt(0, 1), next = found_feDec)
    
-   val isBranch_decEx = Reg(init = UInt(0, 1), next = io.isBranch_Dec )
+   val isBranch_decEx_sig = Reg(init = UInt(0, 1), next = io.isBranch_Dec ) // WTF is going on?
+   val isBranch_decEx = Reg(init = UInt(0, 1), next = isBranch_decEx_sig )
    
    val index = UInt(width = PREDICTOR_INDEX)
    index := OHToUInt(found)
