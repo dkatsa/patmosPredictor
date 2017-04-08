@@ -15,7 +15,7 @@ class predictor1bit() extends Module {
       val target_out = UInt(OUTPUT, PC_SIZE) 
       val correct_PC = UInt(OUTPUT, 1)
       val prex = new PrEx().asOutput 
-      val test = Bool()
+      val test = Bool(OUTPUT)
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -33,7 +33,7 @@ class predictor1bit() extends Module {
    var found_OR = orR(found)
    val found_feDec = Reg(init = UInt(0, 1) )
    val found_decEx = Reg(init = UInt(0, 1) )
-   val isBranch_decEx_sig = Reg(init = UInt(0, 1)) // WTF is going on?
+   // val isBranch_decEx_sig = Reg(init = UInt(0, 1)) // WTF is going on?
    val isBranch_decEx = Reg(init = UInt(0, 1))
    val index = UInt(width = PREDICTOR_INDEX)
    val index_feDec = Reg(init = UInt(0, PREDICTOR_INDEX))
@@ -52,8 +52,9 @@ class predictor1bit() extends Module {
    
    found_feDec := found_OR
    found_decEx := found_feDec
-   isBranch_decEx_sig := io.isBranch_Dec
-   isBranch_decEx := isBranch_decEx_sig
+   // isBranch_decEx_sig := io.isBranch_Dec
+   // isBranch_decEx := isBranch_decEx_sig
+   isBranch_decEx := io.isBranch_Dec
    index := OHToUInt(found)
    index_feDec := index
    index_decEx := index_feDec
@@ -91,21 +92,16 @@ class predictor1bit() extends Module {
    debugging :=  isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) 
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!
-   when( isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){ // Science bitches !!!
-      pointer  := pointer + UInt(1)
-      PC_Reg(UInt(pointer)) := PC_decEx
-      targetPC_Reg(UInt(pointer)) := io.exfe.branchPc
-      predictor(UInt(pointer)) := UInt(1)
-   }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) ){   
-      when( io.exfe.doBranch =/= predictor(index_decEx) ){
+   
+   when( isBranch_decEx === UInt(1) {
+      when( found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){ // Science bitches !!!
+         pointer  := pointer + UInt(1)
+         PC_Reg(UInt(pointer)) := PC_decEx
+         targetPC_Reg(UInt(pointer)) := io.exfe.branchPc
+         predictor(UInt(pointer)) := UInt(1)
+      }.elsewhen( found_decEx === UInt(1) && io.exfe.doBranch =/= predictor(index_decEx) ){
          predictor(index_decEx) := ~predictor(index_decEx)
       }
-   // }.otherwise{
-      // pointer := pointer 
-      // PC_Reg(UInt(pointer)) := PC_Reg(UInt(pointer))
-      // targetPC_Reg(UInt(pointer)) := targetPC_Reg(UInt(pointer))
-      // predictor(UInt(pointer)) := predictor(UInt(pointer))
-      // predictor(index_decEx) := predictor(index_decEx)
    }
    
    
