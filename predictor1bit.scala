@@ -26,27 +26,77 @@ class predictor1bit() extends Module {
    // Decode #########################################################################
    val found_Dec = Reg(init = Bool(false), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0)) === io.PC_Fe(PC_SIZE-1,PREDICTOR_INDEX))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
+   
+   val PC_BTB_Dec = Reg(UInt(width=PC_SIZE-ADDR, next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0))))  // Store PC
+   val targetPC_Reg_Dec = Reg(UInt(width=PC_SIZE, next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX-1,0)) ))  // Store target_PC
+   val predictor_Dec = Reg(UInt(width=PREDICTOR_WIDTH, next = predictor(io.PC_Fe(PREDICTOR_INDEX-1,0))))  // Store predictor
    // Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    
+   val predictor_Ex = Reg(UInt(width=PREDICTOR_WIDTH, next = predictor_Dec))  // Store predictor
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // Fetch #########################################################################
+
    
    // Decode #########################################################################
    
+   when ( io.isBranch_Dec && predictor_Dec === UInt(1){
+      io.choose_PC := UInt(1)
+      io.target_out := targetPC_Reg_Dec
+   }.otherwise{ 
+      io.choose_PC := UInt(0)
+      io.target_out := UInt(0)
+   }
+   
    // Execute #########################################################################
    
-   when( isBranch_Ex && io.exfe.doBranch ){
+   // There isn't inside the memory.
+   when( isBranch_Ex && io.exfe.doBranch && !found_Ex){
       PC_BTB(PC_Ex(PREDICTOR_INDEX-1,0)) := PC_Ex
       predictor(PC_Ex(PREDICTOR_INDEX-1,0)) := UInt(1)
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX-1,0)) := io.exfe.branchPc
+   // Else there is inside the memory and it misspredict.  
+   }.elsewhen( isBranch_Ex && found_Ex ){
+      when( predictor_Ex =/= io.exfe.doBranch ){
+         predictor(PC_Ex(PREDICTOR_INDEX-1,0)) := ~predictor(PC_Ex(PREDICTOR_INDEX-1,0))
+      }
    }
     
    io.target_out := targetPC_Reg(PC_Ex)
     
    io.test :=  isBranch_Ex && io.isBranch_Dec
+   
+   
+   
+   // Logic to control the manual flush
+   when( predictor(PC_Ex(PREDICTOR_INDEX-1,0)) === UInt(1) && found_Ex ){
+      when( io.exfe.doBranch === UInt(1) ){
+        io.correct_PC := UInt(0)
+        io.prex.override_brflush := Bool(true)
+        io.prex.override_brflush_value := Bool(false)
+       }.otherwise{ 
+        io.correct_PC := UInt(1)
+        io.prex.override_brflush := Bool(true)
+        io.prex.override_brflush_value := Bool(true)
+      }
+   } .otherwise{
+        when( io.exfe.doBranch === UInt(1) ){
+            io.correct_PC := UInt(0)
+            io.prex.override_brflush := Bool(false)
+            io.prex.override_brflush_value := Bool(false)
+        } .otherwise{ // all zeros
+            io.correct_PC := UInt(0)
+            io.prex.override_brflush := Bool(false)
+            io.prex.override_brflush_value := Bool(false)
+        }
+   }
+   
+   
+   
    // predictor(io.PC_Fe(ADDR-1,0))
    // io.PC_Fe(ADDR-1,0)
    
