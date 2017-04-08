@@ -44,7 +44,7 @@ class predictor1bit() extends Module {
    
    // Decode #########################################################################
    
-   when ( io.isBranch_Dec && predictor_Dec === UInt(1){
+   when ( io.isBranch_Dec && predictor_Dec === UInt(1)){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg_Dec
    }.otherwise{ 
