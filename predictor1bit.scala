@@ -11,6 +11,10 @@ class predictor1bit() extends Module {
       val exfe = new ExFe().asInput // branchPC and doBranch from EX
       val prex = new PrEx().asOutput 
       val test = Bool(OUTPUT)
+      val choose_PC = UInt(OUTPUT,1)
+      val correct_PC = UInt(OUTPUT,1)
+      val target_out = UInt(OUTPUT,PC_SIZE)
+      
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -24,7 +28,7 @@ class predictor1bit() extends Module {
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    
-   val isBranch_Ex = Reg(init = Bool(false), next = isBranch_Dec)
+   val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    
    // Fetch #########################################################################
    
@@ -33,7 +37,7 @@ class predictor1bit() extends Module {
    // Execute #########################################################################
    
    when( isBranch_Ex && io.exfe.doBranch ){
-      predictor(PC_Ex(ADDR-1,0)) = UInt(1)
+      predictor(PC_Ex(ADDR-1,0)) := UInt(1)
    }
     
    // predictor(io.PC_Fe(ADDR-1,0))
