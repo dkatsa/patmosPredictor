@@ -26,35 +26,35 @@ class predictor1bit() extends Module {
    val pointer = Reg(init = UInt(0, PREDICTOR_INDEX)) 
    
    val PC_Fe_sig = Reg(init = UInt(0, PC_SIZE))
-   PC_Fe_sig := io.PC_Fe
    val PC_feDec = Reg(init = UInt(0, PC_SIZE)) // But why ????? one extra delay here !!!!  
-   PC_feDec := PC_Fe_sig
    val PC_decEx = Reg(init = UInt(0, PC_SIZE))
-   PC_decEx := PC_feDec
    var found = UInt(width = ADDR) // One-hot signal to identify the data
+   var found_OR = orR(found)
+   val found_feDec = Reg(init = UInt(0, 1) )
+   val found_decEx = Reg(init = UInt(0, 1) )
+   val isBranch_decEx_sig = Reg(init = UInt(0, 1)) // WTF is going on?
+   val isBranch_decEx = Reg(init = UInt(0, 1))
+   val index = UInt(width = PREDICTOR_INDEX)
+   val index_feDec = Reg(init = UInt(0, PREDICTOR_INDEX))
+   val index_decEx = Reg(init = UInt(0, PREDICTOR_INDEX))
+   val target_feDec = Reg(init = UInt(0, PC_SIZE)) // TODO Compare new with old target.
+   val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH))
+   val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH))
+   PC_Fe_sig := io.PC_Fe
+   PC_feDec := PC_Fe_sig
+   PC_decEx := PC_feDec
    found := UInt(0) // some default
    // A tree of ORs between the bits of signal 'found'
-   var found_OR = orR(found)
    
-   val found_feDec = Reg(init = UInt(0, 1) )
    found_feDec := found_OR
-   val found_decEx = Reg(init = UInt(0, 1) )
    found_decEx := found_feDec
-   val isBranch_decEx_sig = Reg(init = UInt(0, 1)) // WTF is going on?
    isBranch_decEx_sig := io.isBranch_Dec
-   val isBranch_decEx = Reg(init = UInt(0, 1))
    isBranch_decEx := isBranch_decEx_sig
-   val index = UInt(width = PREDICTOR_INDEX)
    index := OHToUInt(found)
-   val index_feDec = Reg(init = UInt(0, PREDICTOR_INDEX))
    index_feDec := index
-   val index_decEx = Reg(init = UInt(0, PREDICTOR_INDEX))
    index_decEx := index_feDec
-   val target_feDec = Reg(init = UInt(0, PC_SIZE)) // TODO Compare new with old target.
    target_feDec := targetPC_Reg(OHToUInt(found))
-   val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH))
    predictor_feDec := predictor(OHToUInt(found))
-   val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH))
    predictor_decEx := predictor_feDec
    // We will science the shit out of it!!!!!!!!!!!!
    
