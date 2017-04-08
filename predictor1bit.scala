@@ -19,13 +19,15 @@ class predictor1bit() extends Module {
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
    // The main memory 
-   val PC_BTB = Vec.fill(PC_SIZE-ADDR) { Reg(UInt(width=PC_SIZE)) } // Store PC
+   // Fetch #########################################################################
+   val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE-ADDR)) } // Store PC
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor
-   
-   val found_Dec = Reg(init = Bool(false), next = PC_BTB(io.PC_Fe(ADDR-1,0)) === io.PC_Fe(PC_SIZE,ADDR))
-   val found_Ex = Reg(init = Bool(false), next = found_Dec)
+   // Decode #########################################################################
+   val found_Dec = Reg(init = Bool(false), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0)) === io.PC_Fe(PC_SIZE-1,PREDICTOR_INDEX))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
+   // Execute #########################################################################
+   val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
@@ -37,7 +39,9 @@ class predictor1bit() extends Module {
    // Execute #########################################################################
    
    when( isBranch_Ex && io.exfe.doBranch ){
-      predictor(PC_Ex(ADDR-1,0)) := UInt(1)
+      PC_BTB(PC_Ex(PREDICTOR_INDEX-1,0)) := PC_Ex
+      predictor(PC_Ex(PREDICTOR_INDEX-1,0)) := UInt(1)
+      targetPC_Reg(PC_Ex(PREDICTOR_INDEX-1,0)) := io.exfe.branchPc
    }
     
    // predictor(io.PC_Fe(ADDR-1,0))
