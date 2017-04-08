@@ -18,8 +18,8 @@ class predictor1bit() extends Module {
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
-   // The main memory 
    // Fetch #########################################################################
+   //    The main memory 
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE-ADDR)) } // Store PC
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor
@@ -43,6 +43,8 @@ class predictor1bit() extends Module {
       predictor(PC_Ex(PREDICTOR_INDEX-1,0)) := UInt(1)
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX-1,0)) := io.exfe.branchPc
    }
+    
+   io.target_out := targetPC_Reg(PC_Ex)
     
    // predictor(io.PC_Fe(ADDR-1,0))
    // io.PC_Fe(ADDR-1,0)
