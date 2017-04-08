@@ -15,6 +15,7 @@ class predictor1bit() extends Module {
       val target_out = UInt(OUTPUT, PC_SIZE) 
       val correct_PC = UInt(OUTPUT, 1)
       val prex = new PrEx().asOutput 
+      val test = Bool()
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -42,6 +43,7 @@ class predictor1bit() extends Module {
    val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH))
    val debugging = Reg(Bool())
    debugging := Bool(false)
+   io.test := debugging
    PC_Fe_sig := io.PC_Fe
    PC_feDec := PC_Fe_sig
    PC_decEx := PC_feDec
