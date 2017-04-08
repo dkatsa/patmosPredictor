@@ -94,12 +94,12 @@ class predictor1bit() extends Module {
    }.elsewhen( isBranch_decEx === UInt(1) && found_decEx === UInt(1) ){   
       when( io.exfe.doBranch =/= predictor(index_decEx) ){
          predictor(index_decEx) := ~predictor(index_decEx)
-      }
-   }.otherwise{
-      pointer := pointer 
-      PC_Reg(UInt(pointer)) := PC_Reg(UInt(pointer))
-      targetPC_Reg(UInt(pointer)) := targetPC_Reg(UInt(pointer))
-      predictor(UInt(pointer)) := predictor(UInt(pointer))
+      // }
+   // }.otherwise{
+      // pointer := pointer 
+      // PC_Reg(UInt(pointer)) := PC_Reg(UInt(pointer))
+      // targetPC_Reg(UInt(pointer)) := targetPC_Reg(UInt(pointer))
+      // predictor(UInt(pointer)) := predictor(UInt(pointer))
       // predictor(index_decEx) := predictor(index_decEx)
    }
    
