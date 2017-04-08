@@ -40,6 +40,8 @@ class predictor1bit() extends Module {
    val target_feDec = Reg(init = UInt(0, PC_SIZE)) // TODO Compare new with old target.
    val predictor_feDec = Reg(init = UInt(0, PREDICTOR_WIDTH))
    val predictor_decEx = Reg(init = UInt(0, PREDICTOR_WIDTH))
+   val debugging = Reg(Bool())
+   debugging := Bool(false)
    PC_Fe_sig := io.PC_Fe
    PC_feDec := PC_Fe_sig
    PC_decEx := PC_feDec
@@ -84,6 +86,7 @@ class predictor1bit() extends Module {
 //         }
    }
    
+   debugging :=  isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) 
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!
    when( isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){ // Science bitches !!!
