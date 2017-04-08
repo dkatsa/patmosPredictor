@@ -326,8 +326,8 @@ class FetchIO extends Bundle() {
   val PC_Fe = UInt(OUTPUT, PC_SIZE)
   val choose_PC = UInt(INPUT, 1)
   val target_out = UInt(INPUT, PC_SIZE) 
-  val correct_PC = UInt(INPUT, 1)
-  val prex = new PrEx().asInput // Customization 2017
+  val correct_PC = UInt(INPUT, 1) 
+  val prex = new PrEx().asInput
   
 }
 
@@ -349,7 +349,7 @@ class DecodeIO() extends Bundle() {
   val rfWrite =  Vec.fill(PIPE_COUNT) { new Result().asInput }
   val exc = new ExcDec().asInput
   // Customization 2017 
-  val isOneOfTheBranches = UInt(OUTPUT, 1)
+  val isOneOfTheBranches = Bool(OUTPUT) 
 }
 
 class ExecuteIO() extends Bundle() {
