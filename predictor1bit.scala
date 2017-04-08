@@ -86,7 +86,7 @@ class predictor1bit() extends Module {
    
    // The pointer increases one each time a new write operations occurs
    // WRITE!!!!
-   when( isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch){ // Science bitches !!!
+   when( isBranch_decEx === UInt(1) && found_decEx === UInt(0) && io.exfe.doBranch === UInt(1) ){ // Science bitches !!!
       pointer  := pointer + UInt(1)
       PC_Reg(UInt(pointer)) := PC_decEx
       targetPC_Reg(UInt(pointer)) := io.exfe.branchPc
