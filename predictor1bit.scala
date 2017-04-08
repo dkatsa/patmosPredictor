@@ -46,6 +46,7 @@ class predictor1bit() extends Module {
     
    io.target_out := targetPC_Reg(PC_Ex)
     
+   io.test :=  isBranch_Ex && io.isBranch_Dec
    // predictor(io.PC_Fe(ADDR-1,0))
    // io.PC_Fe(ADDR-1,0)
    
