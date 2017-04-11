@@ -77,7 +77,7 @@ class predictor1bit() extends Module {
    // Logic for upadating the memories of BTB
    // There isn't inside the memory.
    when( isBranch_Ex && io.exfe.doBranch && !found_Ex){
-      PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex
+      PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
       predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
    // Else there is inside the memory and it misspredict.  
