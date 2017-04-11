@@ -45,8 +45,8 @@ class predictor1bit() extends Module {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //####### Fetch #########################################################################
 
-   test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
-   test_isBranchAND := isBranch_Ex && io.isBranch_Dec
+   io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
+   io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
 
 //####### Fetch #########################################################################
 
@@ -62,7 +62,7 @@ class predictor1bit() extends Module {
       io.target_out := UInt(0)
    }
    
-   testPC_FE_DEC := PC_Dec && io.PC_Fe // Debugging 
+   io.testPC_FE_DEC := PC_Dec && io.PC_Fe // Debugging 
    
 //####### Execute #########################################################################
    
