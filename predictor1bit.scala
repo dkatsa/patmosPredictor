@@ -48,7 +48,7 @@ class predictor1bit() extends Module {
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//####### Fetch #########################################################################
+//####### Debugging #########################################################################
    
    
 
@@ -82,9 +82,8 @@ class predictor1bit() extends Module {
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
    // Else there is inside the memory and it misspredict.  
    }.otherwise{ 
-      when( isBranch_Ex && found_Ex && predictor_Ex === UInt(1) && !io.exfe.doBranch ){
-         predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0)
-      }.elsewhen(){
+      when( isBranch_Ex && found_Ex && predictor_Ex =/= !io.exfe.doBranch ){
+         predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := ~predictor_Ex
       }
    }
  
