@@ -62,7 +62,7 @@ class predictor1bit() extends Module {
       io.target_out := UInt(0)
    }
    
-   io.testPC_FE_DEC := PC_Dec && io.PC_Fe // Debugging 
+   io.testPC_FE_DEC := PC_Dec === io.PC_Fe // Debugging 
    
 //####### Execute #########################################################################
    
