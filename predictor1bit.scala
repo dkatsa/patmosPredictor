@@ -15,12 +15,9 @@ class predictor1bit() extends Module {
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
       
-//     def defaults() = {
-// 
-//       choose_PC := UInt(0)
-//       correct_PC := UInt(0)
-//       target_out := UInt(0)
-//   }
+      def defaults() = {
+         correct_PC := UInt(0)
+      }
       
    }
    // Constant ADDRESSES
@@ -91,15 +88,9 @@ class predictor1bit() extends Module {
         io.prex.override_brflush_value := Bool(true)
       }
    } .otherwise{
-        when( io.exfe.doBranch){
-            io.correct_PC := UInt(0)
-            io.prex.override_brflush := Bool(false)
-            io.prex.override_brflush_value := Bool(false)
-        } .otherwise{ // all zeros
-            io.correct_PC := UInt(0)
-            io.prex.override_brflush := Bool(false)
-            io.prex.override_brflush_value := Bool(false)
-        }
+      io.correct_PC := UInt(0)
+      io.prex.override_brflush := Bool(false)
+      io.prex.override_brflush_value := Bool(false)
    }
    
    
