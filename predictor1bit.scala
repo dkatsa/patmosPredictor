@@ -14,7 +14,7 @@ class predictor1bit() extends Module {
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
       
-      val test = Bool(OUTPUT)
+      // val test = Bool(OUTPUT)
       val testDO = Bool(OUTPUT)
       val test_isBranchXOR = Bool(OUTPUT)
       val test_isBranchAND = Bool(OUTPUT)
@@ -47,6 +47,11 @@ class predictor1bit() extends Module {
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
+   
+   // delay overrides
+   val override_brflush = Reg(init = Bool(false), next = io.prex.override_brflush)
+   val override_brflush_value = Reg(init = Bool(false), next = io.prex.override_brflush_value)
+   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //####### Debugging #########################################################################
@@ -94,19 +99,16 @@ class predictor1bit() extends Module {
    when( predictor_Ex === UInt(1) && found_Ex ){
       when( io.exfe.doBranch){
         io.correct_PC := UInt(0)
-        io.prex.override_brflush := Bool(true)
-        io.prex.override_brflush_value := Bool(false)
-        io.test := Bool(true) // Debugging 
-       }.otherwise{ 
-        io.test := Bool(true) // Debugging 
+        io.prex.override_brflush := Bool(true) || override_brflush
+        io.prex.override_brflush_value := Bool(false) || override_brflush_value
+       }.otherwise{
         io.correct_PC := UInt(1)
-        io.prex.override_brflush := Bool(true)
-        io.prex.override_brflush_value := Bool(true)
+        io.prex.override_brflush := Bool(true) || override_brflush
+        io.prex.override_brflush_value := Bool(true) || override_brflush_value
       }
    } .otherwise{
-      io.test := Bool(false) // Debugging 
       io.correct_PC := UInt(0)
-      io.prex.override_brflush := Bool(false)
-      io.prex.override_brflush_value := Bool(false)
+      io.prex.override_brflush := Bool(false) || override_brflush
+      io.prex.override_brflush_value := Bool(false) || override_brflush_value
    }
 }
