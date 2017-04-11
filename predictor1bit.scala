@@ -49,8 +49,15 @@ class predictor1bit() extends Module {
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    
    // delay overrides
-   val override_brflush = Reg(init = Bool(false), next = io.prex.override_brflush)
-   val override_brflush_value = Reg(init = Bool(false), next = io.prex.override_brflush_value)
+   val override_brflush_sig = Bool()
+   val override_brflush_value_sig = Bool()
+   val override_brflush = Reg(init = Bool(false), next = override_brflush_sig)
+   val override_brflush_value = Reg(init = Bool(false), next = override_brflush_value_sig )
+   override_brflush_sig := Bool(false)
+   override_brflush_value_sig := Bool(false)
+   
+   io.prex.override_brflush := override_brflush || override_brflush_sig
+   io.prex.override_brflush_value := override_brflush_value || override_brflush_value_sig
    
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,22 +100,21 @@ class predictor1bit() extends Module {
       }
    }
  
-   
      
    // Logic to control the manual flush
    when( predictor_Ex === UInt(1) && found_Ex ){
       when( io.exfe.doBranch){
         io.correct_PC := UInt(0)
-        io.prex.override_brflush := Bool(true) || override_brflush
-        io.prex.override_brflush_value := Bool(false) || override_brflush_value
+        override_brflush_sig := Bool(true) 
+        override_brflush_value_sig := Bool(false) 
        }.otherwise{
         io.correct_PC := UInt(1)
-        io.prex.override_brflush := Bool(true) || override_brflush
-        io.prex.override_brflush_value := Bool(true) || override_brflush_value
+        override_brflush_sig := Bool(true) 
+        override_brflush_value_sig := Bool(true) 
       }
    } .otherwise{
       io.correct_PC := UInt(0)
-      io.prex.override_brflush := Bool(false) || override_brflush
-      io.prex.override_brflush_value := Bool(false) || override_brflush_value
+      override_brflush_sig := Bool(false) 
+      override_brflush_value_sig := Bool(false) 
    }
 }
