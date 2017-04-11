@@ -15,6 +15,13 @@ class predictor1bit() extends Module {
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
       
+//     def defaults() = {
+// 
+//       choose_PC := UInt(0)
+//       correct_PC := UInt(0)
+//       target_out := UInt(0)
+//   }
+      
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1 
@@ -27,16 +34,16 @@ class predictor1bit() extends Module {
    val found_Dec = Reg(init = Bool(false), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0)) === io.PC_Fe(PC_SIZE-1,PREDICTOR_INDEX))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    
-   val PC_BTB_Dec = Reg(UInt(width=PC_SIZE-ADDR, next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0))))  // Store PC
-   val targetPC_Reg_Dec = Reg(UInt(width=PC_SIZE, next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX-1,0)) ))  // Store target_PC
-   val predictor_Dec = Reg(UInt(width=PREDICTOR_WIDTH, next = predictor(io.PC_Fe(PREDICTOR_INDEX-1,0))))  // Store predictor
+   val PC_BTB_Dec = Reg(init = UInt(0,width=PC_SIZE-PREDICTOR_INDEX), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX-1,0)))  // Store PC
+   val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX-1,0)))  // Store target_PC
+   val predictor_Dec = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX-1,0)))  // Store predictor
    // Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    
-   val predictor_Ex = Reg(UInt(width=PREDICTOR_WIDTH, next = predictor_Dec))  // Store predictor
+   val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // Fetch #########################################################################
