@@ -34,11 +34,12 @@ class predictor1bit() extends Module {
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
-   val found_Dec = Reg(init = Bool(false), next = (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
    val predictor_Dec = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
+   
+   val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros
 //####### Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
@@ -47,6 +48,9 @@ class predictor1bit() extends Module {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //####### Fetch #########################################################################
+   
+   
+
 
    io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
    io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
@@ -76,8 +80,11 @@ class predictor1bit() extends Module {
       predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
    // Else there is inside the memory and it misspredict.  
-   }.elsewhen( isBranch_Ex && found_Ex && predictor_Ex =/= io.exfe.doBranch ){
-      predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := ~predictor_Ex
+   }.otherwise{ 
+      when( isBranch_Ex && found_Ex && predictor_Ex === UInt(1) && !io.exfe.doBranch ){
+         predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0)
+      }.elsewhen(){
+      }
    }
  
    
