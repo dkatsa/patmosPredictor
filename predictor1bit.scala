@@ -45,6 +45,7 @@ class predictor1bit() extends Module {
 //####### Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
+   val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    
@@ -95,18 +96,27 @@ class predictor1bit() extends Module {
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
    // Else there is inside the memory and it misspredict.  
    }.otherwise{ 
-      when( isBranch_Ex && found_Ex && predictor_Ex =/= !io.exfe.doBranch ){
+      when( isBranch_Ex && found_Ex && (predictor_Ex === UInt(1) ^ io.exfe.doBranch) ){
          predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := ~predictor_Ex
       }
+      when( isBranch_Ex && found_Ex && predictor_Ex === UInt(1) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
+         targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
+      }
    }
- 
-     
+      // targetPC_Reg_Ex
+     // io.exfe.branchPc
    // Logic to control the manual flush
    when( predictor_Ex === UInt(1) && found_Ex && isBranch_Ex){ // !!!!!!!!!!!!!!!!!!!!
       when( io.exfe.doBranch){
-        io.correct_PC := UInt(0)
-        override_brflush_sig := Bool(true) 
-        override_brflush_value_sig := Bool(false) 
+        when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
+           io.correct_PC := UInt(0)
+           override_brflush_sig := Bool(false) 
+           override_brflush_value_sig := Bool(false) // Dont care
+        }.otherwise{
+           io.correct_PC := UInt(0)
+           override_brflush_sig := Bool(true) 
+           override_brflush_value_sig := Bool(false) 
+        }
        }.otherwise{
         io.correct_PC := UInt(1)
         override_brflush_sig := Bool(true) 
