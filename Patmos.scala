@@ -92,11 +92,12 @@ class PatmosCore(binFile: String) extends Module {
   pythia.io.isBranch_Dec <> decode.io.isOneOfTheBranches
   pythia.io.exfe <> execute.io.exfe
   // Outputs
-  execute.io.prex <> pythia.io.prex
   fetch.io.prex <> pythia.io.prex
   fetch.io.correct_PC <> pythia.io.correct_PC
   fetch.io.choose_PC <> pythia.io.choose_PC
   fetch.io.target_out <> pythia.io.target_out
+  decode.io.choose_PC <> pythia.io.choose_PC
+  execute.io.prex <> pythia.io.prex
   // Customization 2017  /\/\/\/\/\
  
   

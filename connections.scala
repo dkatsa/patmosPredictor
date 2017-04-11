@@ -350,6 +350,7 @@ class DecodeIO() extends Bundle() {
   val exc = new ExcDec().asInput
   // Customization 2017 
   val isOneOfTheBranches = Bool(OUTPUT) 
+  val choose_PC = UInt(OUTPUT,1)
 }
 
 class ExecuteIO() extends Bundle() {
