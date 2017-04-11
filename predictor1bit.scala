@@ -102,7 +102,7 @@ class predictor1bit() extends Module {
  
      
    // Logic to control the manual flush
-   when( predictor_Ex === UInt(1) && found_Ex ){
+   when( predictor_Ex === UInt(1) && found_Ex && isBranch_Ex){ // !!!!!!!!!!!!!!!!!!!!
       when( io.exfe.doBranch){
         io.correct_PC := UInt(0)
         override_brflush_sig := Bool(true) 
