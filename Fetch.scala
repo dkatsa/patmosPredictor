@@ -140,28 +140,26 @@ class Fetch(fileName : String) extends Module {
   // Customization 2017.1      // Stored and delayed the original PCs   
   val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
-   val pc_next_Odd = Mux(override_branch, io.exfe.branchPc, pc_cont)  
-   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE) )
-   pcOdd_feDec := pc_next_Odd
-   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
-   pcOdd_decEx := pcOdd_feDec
+   val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
+   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
+   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, 
-         Mux(io.choose_PC === UInt(1),io.target_out,   
+         Mux(override_branch, io.exfe.branchPc,
          pc_next_Odd)))
+         
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
-  val pc_next_Even = Mux(override_branch, io.exfe.branchPc + UInt(2), pc_cont2)
-  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE) )
-  pcEven_feDec := pc_next_Even
-  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
-  pcEven_decEx := pcEven_feDec
+  val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
+  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Even)
+  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx, 
-         Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), 
+         Mux(override_branch, io.exfe.branchPc + UInt(2), 
          pc_next_Even)))
 
+         
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
   addrEven := addrEvenReg
   addrOdd := addrOddReg
