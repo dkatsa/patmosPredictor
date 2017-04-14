@@ -126,7 +126,7 @@ class predictor1bit() extends Module {
       override_brflush_value_sig := Bool(false) 
    }
    
-   when( found_Ex && isBranch_Ex && !io.exfe.doBranch && (predictor_Ex === UInt(1))){
+   when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
