@@ -15,7 +15,7 @@ class predictor1bit() extends Module {
       val target_out = UInt(OUTPUT,PC_SIZE)
       
       // val test = Bool(OUTPUT)
-      val testDO = Bool(OUTPUT)
+      val testCorrect = Bool(OUTPUT)
       val test_isBranchXOR = Bool(OUTPUT)
       val test_isBranchAND = Bool(OUTPUT)
       val testPC_FE_DEC = Bool(OUTPUT)
@@ -65,8 +65,8 @@ class predictor1bit() extends Module {
 //####### Debugging #########################################################################
    
    
-
-   io.testDO := io.prex.override_brflush && io.exfe.doBranch
+   io.testCorrect := predictor_Ex === UInt(1) && found_Ex && isBranch_Ex && !io.exfe.doBranch
+   // io.testDO := io.prex.override_brflush && io.exfe.doBranch
    io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
    io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
 
