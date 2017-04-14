@@ -101,10 +101,11 @@ class predictor1bit() extends Module {
       }
       when( isBranch_Ex && found_Ex && predictor_Ex === UInt(1) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
+      }.elsewhen( isBranch_Ex && found_Ex && predictor_Ex === UInt(0) && io.exfe.doBranch ){
+         targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       }
    }
-      // targetPC_Reg_Ex
-     // io.exfe.branchPc
+   
    // Logic to control the manual flush
    when( predictor_Ex === UInt(1) && found_Ex && isBranch_Ex){ // !!!!!!!!!!!!!!!!!!!!
       when( io.exfe.doBranch){
@@ -117,12 +118,12 @@ class predictor1bit() extends Module {
            override_brflush_sig := Bool(true) 
            override_brflush_value_sig := Bool(false) 
         }
-       }.otherwise{
+      }.otherwise{
         io.correct_PC := UInt(1)
         override_brflush_sig := Bool(true) 
         override_brflush_value_sig := Bool(true) 
       }
-   } .otherwise{
+   }.otherwise{
       io.correct_PC := UInt(0)
       override_brflush_sig := Bool(false) 
       override_brflush_value_sig := Bool(false) 
