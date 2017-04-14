@@ -19,9 +19,9 @@ class predictor1bit() extends Module {
       // val test_isBranchXOR = Bool(OUTPUT)
       // val test_isBranchAND = Bool(OUTPUT)
       // val testPC_FE_DEC = Bool(OUTPUT)
-      def defaults() = {
-         correct_PC := UInt(0)
-      }
+      // def defaults() = {
+         // correct_PC := UInt(0)
+      // }
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1  => 2**6 = 64
@@ -49,6 +49,14 @@ class predictor1bit() extends Module {
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    
+   
+   
+   val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
+   // val correct_PC_sig = Mux( found_Ex , 
+                        // Mux( isBranch_Ex , 
+                        // Mux( !io.exfe.doBranch , 
+                        // Mux( predictor_Ex === UInt(1), UInt(1), UInt(0)), UInt(0)), UInt(0)), UInt(0))
+                        
    // delay overrides
    val override_brflush_sig = Bool()
    val override_brflush_value_sig = Bool()
@@ -126,9 +134,11 @@ class predictor1bit() extends Module {
       override_brflush_value_sig := Bool(false) 
    }
    
-   when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
-      io.correct_PC := UInt(1) 
-   }.otherwise{
-      io.correct_PC := UInt(0)
-   }
+   
+   io.correct_PC := correct_PC_sig
+   // when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
+      // io.correct_PC := UInt(1) 
+   // }.otherwise{
+      // io.correct_PC := UInt(0)
+   // }
 }
