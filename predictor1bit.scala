@@ -16,6 +16,7 @@ class predictor1bit() extends Module {
       
       // val test = Bool(OUTPUT)
       val testCorrect = Bool(OUTPUT)
+      val testWhen = Bool(OUTPUT)
       // val test_isBranchXOR = Bool(OUTPUT)
       // val test_isBranchAND = Bool(OUTPUT)
       // val testPC_FE_DEC = Bool(OUTPUT)
@@ -118,6 +119,7 @@ class predictor1bit() extends Module {
    // Logic to control the manual flush
    when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
       when( io.exfe.doBranch){
+        io.testWhen := Bool(false)
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            override_brflush_sig := Bool(false) 
            override_brflush_value_sig := Bool(false) // Dont care
@@ -126,10 +128,12 @@ class predictor1bit() extends Module {
            override_brflush_value_sig := Bool(false) 
         }
       }.otherwise{
+        io.testWhen := Bool(true)
         override_brflush_sig := Bool(true) 
         override_brflush_value_sig := Bool(true) 
       }
    }.otherwise{
+      io.testWhen := Bool(false)
       override_brflush_sig := Bool(false) 
       override_brflush_value_sig := Bool(false) 
    }
