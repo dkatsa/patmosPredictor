@@ -16,9 +16,9 @@ class predictor1bit() extends Module {
       
       // val test = Bool(OUTPUT)
       val testCorrect = Bool(OUTPUT)
-      val test_isBranchXOR = Bool(OUTPUT)
-      val test_isBranchAND = Bool(OUTPUT)
-      val testPC_FE_DEC = Bool(OUTPUT)
+      // val test_isBranchXOR = Bool(OUTPUT)
+      // val test_isBranchAND = Bool(OUTPUT)
+      // val testPC_FE_DEC = Bool(OUTPUT)
       def defaults() = {
          correct_PC := UInt(0)
       }
@@ -67,8 +67,8 @@ class predictor1bit() extends Module {
    
    io.testCorrect := predictor_Ex === UInt(1) && found_Ex && isBranch_Ex && !io.exfe.doBranch
    // io.testDO := io.prex.override_brflush && io.exfe.doBranch
-   io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
-   io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
+   // io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
+   // io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
 
 //####### Fetch #########################################################################
 
@@ -84,7 +84,7 @@ class predictor1bit() extends Module {
       io.target_out := UInt(0)
    }
    
-   io.testPC_FE_DEC := PC_Dec === io.PC_Fe // Debugging 
+   // io.testPC_FE_DEC := PC_Dec === io.PC_Fe // Debugging 
    
 //####### Execute #########################################################################
    
@@ -106,26 +106,29 @@ class predictor1bit() extends Module {
       }
    }
    
+   
    // Logic to control the manual flush
-   when( predictor_Ex === UInt(1) && found_Ex && isBranch_Ex){ // !!!!!!!!!!!!!!!!!!!!
+   when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
-           io.correct_PC := UInt(0)
            override_brflush_sig := Bool(false) 
            override_brflush_value_sig := Bool(false) // Dont care
         }.otherwise{
-           io.correct_PC := UInt(0)
            override_brflush_sig := Bool(true) 
            override_brflush_value_sig := Bool(false) 
         }
       }.otherwise{
-        io.correct_PC := UInt(1)
         override_brflush_sig := Bool(true) 
         override_brflush_value_sig := Bool(true) 
       }
    }.otherwise{
-      io.correct_PC := UInt(0)
       override_brflush_sig := Bool(false) 
       override_brflush_value_sig := Bool(false) 
+   }
+   
+   when( found_Ex && isBranch_Ex && !io.exfe.doBranch && (predictor_Ex === UInt(1))){
+      io.correct_PC := UInt(1) 
+   }.otherwise{
+      io.correct_PC := UInt(0)
    }
 }
