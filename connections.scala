@@ -276,6 +276,10 @@ class ExMem() extends Bundle() {
 class ExFe() extends Bundle() {
   val doBranch = Bool()
   val branchPc = UInt(width = PC_SIZE)
+  def defaults() = {
+    doBranch := Bool(false)
+    branchPc := UInt(0,PC_SIZE)
+  }
 }
 
 class MemFe() extends Bundle() {
@@ -328,7 +332,9 @@ class FetchIO extends Bundle() {
   val target_out = UInt(INPUT, PC_SIZE) 
   val correct_PC = UInt(INPUT, 1) 
   val prex = new PrEx().asInput
-  
+  def defaults() = {
+    PC_Fe := UInt(0, PC_SIZE) 
+  }
 }
 
 class ExcDec() extends Bundle() {
@@ -351,6 +357,9 @@ class DecodeIO() extends Bundle() {
   // Customization 2017 
   val isOneOfTheBranches = Bool(OUTPUT) 
   val choose_PC = UInt(INPUT,1)
+  def defaults() = {
+    isOneOfTheBranches := Bool(false)
+  }
 }
 
 class ExecuteIO() extends Bundle() {
