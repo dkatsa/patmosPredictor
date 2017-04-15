@@ -374,8 +374,12 @@ class ExecuteIO() extends Bundle() {
 
 // Customization 2017
 class PrEx() extends Bundle() {
-  val override_brflush = Bool()
-  val override_brflush_value = Bool()
+   val override_brflush = Bool()
+   val override_brflush_value = Bool()
+   def defaults() = {
+      override_brflush :=  Bool(false)
+      override_brflush_value := Bool(false)
+   }
 }
 
 class InOutIO() extends Bundle() {

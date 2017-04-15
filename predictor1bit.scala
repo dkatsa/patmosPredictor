@@ -15,14 +15,15 @@ class predictor1bit() extends Module {
       val target_out = UInt(OUTPUT,PC_SIZE)
       
       // val test = Bool(OUTPUT)
-      val testCorrect = Bool(OUTPUT)
+      // val testCorrect = Bool(OUTPUT)
       val testWhen = Bool(OUTPUT)
-      // val test_isBranchXOR = Bool(OUTPUT)
-      // val test_isBranchAND = Bool(OUTPUT)
-      // val testPC_FE_DEC = Bool(OUTPUT)
-      // def defaults() = {
-         // correct_PC := UInt(0)
-      // }
+      
+      def defaults() = {
+         choose_PC := UInt(0)
+         correct_PC := UInt(0)
+         target_out := UInt(0,PC_SIZE)
+         testWhen := Bool(false)
+      }
    }
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1  => 2**6 = 64
@@ -50,14 +51,8 @@ class predictor1bit() extends Module {
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    
+   // val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
    
-   
-   val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
-   // val correct_PC_sig = Mux( found_Ex , 
-                        // Mux( isBranch_Ex , 
-                        // Mux( !io.exfe.doBranch , 
-                        // Mux( predictor_Ex === UInt(1), UInt(1), UInt(0)), UInt(0)), UInt(0)), UInt(0))
-                        
    // delay overrides
    val override_brflush_sig = Bool()
    val override_brflush_value_sig = Bool()
@@ -74,10 +69,8 @@ class predictor1bit() extends Module {
 //####### Debugging #########################################################################
    
    
-   io.testCorrect := predictor_Ex === UInt(1) && found_Ex && isBranch_Ex && !io.exfe.doBranch
-   // io.testDO := io.prex.override_brflush && io.exfe.doBranch
-   // io.test_isBranchXOR := isBranch_Ex ^ io.isBranch_Dec
-   // io.test_isBranchAND := isBranch_Ex && io.isBranch_Dec
+   // io.testCorrect := predictor_Ex === UInt(1) && found_Ex && isBranch_Ex && !io.exfe.doBranch
+   
 
 //####### Fetch #########################################################################
 
@@ -93,7 +86,7 @@ class predictor1bit() extends Module {
       io.target_out := UInt(0)
    }
    
-   // io.testPC_FE_DEC := PC_Dec === io.PC_Fe // Debugging 
+   
    
 //####### Execute #########################################################################
    
@@ -114,7 +107,6 @@ class predictor1bit() extends Module {
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       }
    }
-   
    
    // Logic to control the manual flush
    when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
@@ -139,10 +131,10 @@ class predictor1bit() extends Module {
    }
    
    
-   io.correct_PC := correct_PC_sig
-   // when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
-      // io.correct_PC := UInt(1) 
-   // }.otherwise{
-      // io.correct_PC := UInt(0)
-   // }
+   // io.correct_PC := correct_PC_sig
+   when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
+      io.correct_PC := UInt(1) 
+   }.otherwise{
+      io.correct_PC := UInt(0)
+   }
 }

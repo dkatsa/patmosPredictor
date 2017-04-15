@@ -138,7 +138,7 @@ class Fetch(fileName : String) extends Module {
 
   val pc_cont = Mux(b_valid, pcReg + UInt(2), pcReg + UInt(1))
   // Customization 2017.1      // Stored and delayed the original PCs   
-  val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
+   val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
