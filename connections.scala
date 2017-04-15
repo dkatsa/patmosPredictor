@@ -378,7 +378,8 @@ class ExecuteIO() extends Bundle() {
   //stack cache
   val exsc = new ExSc().asOutput
   val scex = new ScEx().asInput
-  val prex = new PrEx().asInput // Customization 2017
+  // Customization 2017
+  val prex = new PrEx().asInput 
 }
 
 // Customization 2017

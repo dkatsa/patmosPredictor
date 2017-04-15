@@ -9,7 +9,7 @@ class predictor1bit() extends Module {
       val PC_Fe = UInt(INPUT, PC_SIZE) // PC 
       val isBranch_Dec = Bool(INPUT) // Identify branches from Decode
       val exfe = new ExFe().asInput // branchPC and doBranch from EX
-      val prex = new PrEx().asOutput 
+      val pr_ex = new PrEx().asOutput 
       val choose_PC = UInt(OUTPUT,1)
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
@@ -56,13 +56,13 @@ class predictor1bit() extends Module {
    // delay overrides
    val override_brflush_sig = Bool()
    val override_brflush_value_sig = Bool()
-   val override_brflush = Reg(init = Bool(false), next = override_brflush_sig)
-   val override_brflush_value = Reg(init = Bool(false), next = override_brflush_value_sig )
+   val override_brflush_reg = Reg(init = Bool(false), next = override_brflush_sig)
+   val override_brflush_value_reg = Reg(init = Bool(false), next = override_brflush_value_sig )
    override_brflush_sig := Bool(false)
    override_brflush_value_sig := Bool(false)
    
-   io.prex.override_brflush := override_brflush || override_brflush_sig
-   io.prex.override_brflush_value := override_brflush_value || override_brflush_value_sig
+   io.pr_ex.override_brflush := override_brflush_reg || override_brflush_sig
+   io.pr_ex.override_brflush_value := override_brflush_value_reg || override_brflush_value_sig
    
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ class predictor1bit() extends Module {
    
 //####### Decode #########################################################################
    
-   when ( io.isBranch_Dec && predictor_Dec === UInt(1) && found_Dec){
+   when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg_Dec
    }.otherwise{ 
@@ -98,12 +98,12 @@ class predictor1bit() extends Module {
       targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
    // Else there is inside the memory and it misspredict.  
    }.otherwise{ 
-      when( isBranch_Ex && found_Ex && (predictor_Ex === UInt(1) ^ io.exfe.doBranch) ){
+      when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) ^ io.exfe.doBranch) ){
          predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := ~predictor_Ex
       }
-      when( isBranch_Ex && found_Ex && predictor_Ex === UInt(1) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
+      when( isBranch_Ex && found_Ex && (predictor_Ex === UInt(1)) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
-      }.elsewhen( isBranch_Ex && found_Ex && predictor_Ex === UInt(0) && io.exfe.doBranch ){
+      }.elsewhen( isBranch_Ex && found_Ex && (predictor_Ex === UInt(0)) && io.exfe.doBranch ){
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       }
    }
@@ -132,7 +132,7 @@ class predictor1bit() extends Module {
    
    
    // io.correct_PC := correct_PC_sig
-   when( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))){
+   when( found_Ex && isBranch_Ex && (! io.exfe.doBranch) && (predictor_Ex === UInt(1))){
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)

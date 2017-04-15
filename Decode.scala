@@ -260,21 +260,8 @@ class Decode() extends Module {
   }
   
   // Customization 2017 \/\/\/\/\/\/
-  // val isOneOfTheBranches := Bool() 
-  //io.isOneOfTheBranches := Bool(false)
- /* io.isOneOfTheBranches := (opcode === OPCODE_CFL_TRAP || 
-        opcode === OPCODE_CFL_CALL || opcode === OPCODE_CFL_CALLND ||
-        opcode === OPCODE_CFL_BR || opcode === OPCODE_CFL_BRND ||
-        opcode === OPCODE_CFL_BRCF || opcode === OPCODE_CFL_BRCFND ||
-        opcode === OPCODE_CFL_CFLR || opcode === OPCODE_CFL_CFLRND)*/
         
   io.isOneOfTheBranches := (opcode === OPCODE_CFL_BRND )
-  
-   // when(opcode === OPCODE_CFL_BRND) {
-      // io.isOneOfTheBranches := Bool(true)
-   // } .otherwise{
-      // io.isOneOfTheBranches := Bool(false)
-   // }
   
   // Customization 2017 /\/\/\/\/\/\
   // Control-flow operations
