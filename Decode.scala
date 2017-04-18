@@ -72,6 +72,7 @@ class Decode() extends Module {
 
   // default values
   io.decex.defaults()
+  io.decex.jmpOp.defaults()
 
   // forward RF addresses and data
   io.decex.rsAddr(0) := decReg.instr_a(16, 12)
