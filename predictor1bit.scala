@@ -69,15 +69,15 @@ class predictor1bit() extends Module {
    // val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
    
    // delay overrides
-   val override_brflush_sig = Bool()
-   val override_brflush_value_sig = Bool()
-   val override_brflush_reg = Reg(init = Bool(false), next = override_brflush_sig)
-   val override_brflush_value_reg = Reg(init = Bool(false), next = override_brflush_value_sig )
-   override_brflush_sig := Bool(false)
-   override_brflush_value_sig := Bool(false)
+   // val override_brflush_sig = Bool()
+   // val override_brflush_value_sig = Bool()
+   // val override_brflush_reg = Reg(init = Bool(false), next = override_brflush_sig)
+   // val override_brflush_value_reg = Reg(init = Bool(false), next = override_brflush_value_sig )
+   // override_brflush_sig := Bool(false)
+   // override_brflush_value_sig := Bool(false)
    
-   io.pr_ex.override_brflush := (override_brflush_reg || override_brflush_sig) //&& (!io.correct_PC)
-   io.pr_ex.override_brflush_value := (override_brflush_value_reg || override_brflush_value_sig) // && (!io.correct_PC)
+   // io.pr_ex.override_brflush := (override_brflush_reg || override_brflush_sig) //&& (!io.correct_PC)
+   // io.pr_ex.override_brflush_value := (override_brflush_value_reg || override_brflush_value_sig) // && (!io.correct_PC)
    
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,23 +122,43 @@ class predictor1bit() extends Module {
    }
    
    // Logic to control the manual flush
+   // when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
+      // when( io.exfe.doBranch){
+        // when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
+           // override_brflush_sig := Bool(false) 
+           // override_brflush_value_sig := Bool(false) // Dont care
+        // }.otherwise{
+           // override_brflush_sig := Bool(true) 
+           // override_brflush_value_sig := Bool(false) 
+        // }
+      // }.otherwise{
+        // override_brflush_sig := Bool(true) 
+        // override_brflush_value_sig := Bool(true) 
+      // }
+   // }.otherwise{
+      // override_brflush_sig := Bool(false) 
+      // override_brflush_value_sig := Bool(false) 
+   // }
    when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
-           override_brflush_sig := Bool(false) 
-           override_brflush_value_sig := Bool(false) // Dont care
+           io.pr_ex.override_brflush := Bool(false) 
+           io.pr_ex.override_brflush_value := Bool(false) // Dont care
         }.otherwise{
-           override_brflush_sig := Bool(true) 
-           override_brflush_value_sig := Bool(false) 
+           io.pr_ex.override_brflush := Bool(true) 
+           io.pr_ex.override_brflush_value := Bool(false) 
         }
       }.otherwise{
-        override_brflush_sig := Bool(true) 
-        override_brflush_value_sig := Bool(true) 
+        io.pr_ex.override_brflush := Bool(true) 
+        io.pr_ex.override_brflush_value := Bool(true) 
       }
    }.otherwise{
-      override_brflush_sig := Bool(false) 
-      override_brflush_value_sig := Bool(false) 
+      io.pr_ex.override_brflush := Bool(false) 
+      io.pr_ex.override_brflush_value := Bool(false) 
    }
+   
+   
+   
    
    
    // io.testWhen := Bool(false)
