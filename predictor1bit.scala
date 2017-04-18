@@ -16,7 +16,8 @@ class predictor1bit() extends Module {
       
       
       // Outputs for Debugging 2017 \/\/\/\/\/
-      val PC_Fe_deb = UInt(OUTPUT, PC_SIZE) 
+      val PC_Dec_deb = UInt(OUTPUT, PC_SIZE) 
+      val PC_Ex_deb = UInt(OUTPUT, PC_SIZE) 
       val found_Ex_deb = Bool(OUTPUT)
       val isBranch_Ex_deb = Bool(OUTPUT)
       val predictor_Ex_deb = UInt(OUTPUT,1)
@@ -49,7 +50,7 @@ class predictor1bit() extends Module {
    // Find inside BTB the respective PC 
    val found_D = Reg(init = Bool(false), next = (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) )
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
-   io.PC_Fe_deb := PC_Dec
+   io.PC_Dec_deb := PC_Dec
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
    val predictor_Dec = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
@@ -59,6 +60,7 @@ class predictor1bit() extends Module {
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    io.found_Ex_deb := found_Ex
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
+   io.PC_Ex_deb := PC_Ex
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
    io.isBranch_Ex_deb := isBranch_Ex
