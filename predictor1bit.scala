@@ -14,9 +14,14 @@ class predictor1bit() extends Module {
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
       
-      // val test = Bool(OUTPUT)
-      // val testCorrect = Bool(OUTPUT)
+      
+      // Outputs for Debugging 2017 \/\/\/\/\/
+      val PC_Fe_deb = UInt(OUTPUT, PC_SIZE) 
+      val found_Ex_deb = Bool(OUTPUT)
+      val isBranch_Ex_deb = Bool(OUTPUT)
+      val predictor_Ex_deb = UInt(OUTPUT,1)
       val testWhen = Bool(OUTPUT)
+      // Outputs for Debugging 2017 /\/\/\/\/\
       
       def defaults() = {
          choose_PC := UInt(0)
@@ -25,6 +30,11 @@ class predictor1bit() extends Module {
          testWhen := Bool(false)
       }
    }
+   
+   // default values
+   io.defaults()
+   io.pr_ex.defaults()
+   
    // Constant ADDRESSES
    val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1  => 2**6 = 64
    val MSB = PC_SIZE - PREDICTOR_INDEX
@@ -39,6 +49,7 @@ class predictor1bit() extends Module {
    // Find inside BTB the respective PC 
    val found_D = Reg(init = Bool(false), next = (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) )
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
+   io.PC_Fe_deb := PC_Dec
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
    val predictor_Dec = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
@@ -46,11 +57,13 @@ class predictor1bit() extends Module {
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros
 //####### Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
+   io.found_Ex_deb := found_Ex
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
    val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
+   io.isBranch_Ex_deb := isBranch_Ex
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
-   
+   io.predictor_Ex_deb := predictor_Ex
    // val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
    
    // delay overrides
@@ -111,7 +124,6 @@ class predictor1bit() extends Module {
    // Logic to control the manual flush
    when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
       when( io.exfe.doBranch){
-        io.testWhen := Bool(false)
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            override_brflush_sig := Bool(false) 
            override_brflush_value_sig := Bool(false) // Dont care
@@ -120,19 +132,25 @@ class predictor1bit() extends Module {
            override_brflush_value_sig := Bool(false) 
         }
       }.otherwise{
-        io.testWhen := Bool(true)
         override_brflush_sig := Bool(true) 
         override_brflush_value_sig := Bool(true) 
       }
    }.otherwise{
-      io.testWhen := Bool(false)
       override_brflush_sig := Bool(false) 
       override_brflush_value_sig := Bool(false) 
    }
    
    
+   io.testWhen := Bool(false)
+   when( (io.found_Ex_deb && io.isBranch_Ex_deb) && ((! io.exfe.doBranch) && (io.predictor_Ex_deb === UInt(1)))){
+      io.testWhen := Bool(true)
+   }.otherwise{
+      io.testWhen := Bool(false)
+   }
+   
+   
    // io.correct_PC := correct_PC_sig
-   when( found_Ex && isBranch_Ex && (! io.exfe.doBranch) && (predictor_Ex === UInt(1))){
+   when( (found_Ex && isBranch_Ex) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1)))){
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)

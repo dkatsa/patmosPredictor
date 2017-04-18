@@ -145,8 +145,8 @@ class Fetch(fileName : String) extends Module {
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
-         Mux(override_branch, io.exfe.branchPc, // Shift up
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
+         Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd)))
          
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
@@ -155,8 +155,8 @@ class Fetch(fileName : String) extends Module {
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
-         Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
+         Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even)))
 
          
