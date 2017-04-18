@@ -333,8 +333,6 @@ class FetchIO extends Bundle() {
   val correct_PC = UInt(INPUT, 1) 
   val prex = new PrEx().asInput
   
-  val pcReg_deb = UInt(OUTPUT, PC_SIZE)
-  
   def defaults() = {
     PC_Fe := UInt(0, PC_SIZE) 
   }
