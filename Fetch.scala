@@ -50,6 +50,7 @@ class Fetch(fileName : String) extends Module {
   val io = new FetchIO()
 
   val pcReg = Reg(init = UInt(1, PC_SIZE))
+  io.pcReg_deb := pcReg
   val addrEven = UInt()
   val addrOdd = UInt()
   val addrEvenReg = Reg(init = UInt(2, PC_SIZE) )
