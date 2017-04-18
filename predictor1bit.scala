@@ -46,12 +46,14 @@ class predictor1bit() extends Module {
    val PC_SIZE_ONE = PC_SIZE - 1
 //####### Fetch #########################################################################
    //    The main memory 
-   val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
+   val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
+   
+   val found_Fe = Mux(PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe ,Bool(true),Bool(false))
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
-   val found_D = Reg(init = Bool(false), next = (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) )
+   val found_Dec = Reg(init = Bool(false), next = found_Fe )
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    // io.PC_Dec_deb := PC_Dec
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
@@ -59,7 +61,7 @@ class predictor1bit() extends Module {
    val predictor_Dec = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
    
    // Avoid pseudoFounds for small PC. Fix me with more efficiency way!!!!!! 
-   val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
+   // val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    // io.found_Ex_deb := found_Ex
@@ -95,9 +97,11 @@ class predictor1bit() extends Module {
    
 //####### Decode ##############################################################
    
-   when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
+   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && found_Fe){
+   // when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
       io.choose_PC := UInt(1)
-      io.target_out := targetPC_Reg_Dec
+      // io.target_out := targetPC_Reg_Dec
+      io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
       io.choose_PC := UInt(0)
       io.target_out := UInt(0)
