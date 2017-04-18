@@ -76,8 +76,8 @@ class predictor1bit() extends Module {
    override_brflush_sig := Bool(false)
    override_brflush_value_sig := Bool(false)
    
-   io.pr_ex.override_brflush := (override_brflush_reg || override_brflush_sig) && ! correct_PC
-   io.pr_ex.override_brflush_value := (override_brflush_value_reg || override_brflush_value_sig) && ! correct_PC
+   io.pr_ex.override_brflush := (override_brflush_reg || override_brflush_sig) && (!correct_PC)
+   io.pr_ex.override_brflush_value := (override_brflush_value_reg || override_brflush_value_sig) && (!correct_PC)
    
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
