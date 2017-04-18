@@ -28,7 +28,7 @@ class predictor1bit() extends Module {
          choose_PC := UInt(0)
          correct_PC := UInt(0)
          target_out := UInt(0,PC_SIZE)
-         testWhen := Bool(false)
+         // testWhen := Bool(false)
       }
    }
    
