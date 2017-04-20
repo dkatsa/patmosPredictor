@@ -6,6 +6,7 @@ import Constants._
 
 class predictor1bit() extends Module {
    val io = new Bundle {
+      val ena = Bool(INPUT)
       val PC_Fe = UInt(INPUT, PC_SIZE) // PC 
       val isBranch_Dec = Bool(INPUT) // Identify branches from Decode
       val exfe = new ExFe().asInput // branchPC and doBranch from EX
@@ -55,6 +56,8 @@ class predictor1bit() extends Module {
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
+   val enableReg = Reg(init = Bool(false))
+   val stallCorrect = Reg(init = Bool(false))
    val found_D = Reg(init = Bool(false), next = (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) )
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    // io.PC_Dec_deb := PC_Dec
@@ -108,6 +111,7 @@ class predictor1bit() extends Module {
    // when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
    when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX))){
       io.choose_PC := UInt(1)
+      enableReg := io.ena
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
       io.choose_PC := UInt(0)
@@ -184,8 +188,10 @@ class predictor1bit() extends Module {
       // io.testWhen := Bool(false)
    // }
    
+   // Stall correct due to closed enable!
    
-   when( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)){
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && enableReg) ) {
+      stallCorrect := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)

@@ -169,6 +169,7 @@ class PatmosCore(binFile: String) extends Module {
 
   // Enable signal
   val enable = memory.io.ena_out & icache.io.ena_out & !dcache.io.scIO.stall
+  pythia.io.ena := enable
   fetch.io.ena := enable
   decode.io.ena := enable
   execute.io.ena := enable

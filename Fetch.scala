@@ -123,7 +123,7 @@ class Fetch(fileName : String) extends Module {
   val instr_a_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrEven, io.icachefe.instrOdd)
   val instr_b_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrOdd, io.icachefe.instrEven)
 
-  
+  val stall = Reg(init = Bool(false))
 
    
    // Customization 2017 /\/\/\/\/\/\/\
@@ -142,7 +142,7 @@ class Fetch(fileName : String) extends Module {
   
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
-   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
+   val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
@@ -152,7 +152,7 @@ class Fetch(fileName : String) extends Module {
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
-  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
+  val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
@@ -174,6 +174,19 @@ class Fetch(fileName : String) extends Module {
 
   
  // Customization 2017 \/\/\/\/\/\/\/
+ // Stalls with Enable closed!
+   when( (!io.ena) && (io.choose_PC === UInt(1)) ) {
+      pcOdd_decEx := pcOdd_decEx
+      pcEven_decEx := pcEven_decEx
+      stall := Bool(true)
+   }.elsewhen(! stall){
+      pcOdd_decEx := pcOdd_feDec
+      pcEven_decEx := pcEven_feDec
+   }.otherwise{
+      pcOdd_decEx := pcOdd_decEx
+      pcEven_decEx := pcEven_decEx
+   }
+ 
   // io.PC_next := pc_next
   io.PC_Fe := pcReg
   
