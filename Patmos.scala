@@ -91,6 +91,8 @@ class PatmosCore(binFile: String) extends Module {
   pythia.io.PC_Fe <> fetch.io.PC_Fe
   pythia.io.isBranch_Dec <> decode.io.isOneOfTheBranches
   pythia.io.exfe <> execute.io.exfe
+  pythia.io.memfe <> memory.io.memfe // We call in MEM
+  
   // Outputs
   fetch.io.prex <> pythia.io.pr_ex
   fetch.io.correct_PC <> pythia.io.correct_PC
