@@ -141,7 +141,7 @@ class Fetch(fileName : String) extends Module {
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
-   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Odd)
+   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE), next = pcOdd_feDec)
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
@@ -151,7 +151,7 @@ class Fetch(fileName : String) extends Module {
          
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
-  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_next_Even)
+  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE), next = pcEven_feDec)
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
