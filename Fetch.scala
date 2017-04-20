@@ -175,7 +175,8 @@ class Fetch(fileName : String) extends Module {
   
  // Customization 2017 \/\/\/\/\/\/\/
   io.PC_next := pc_next
-  io.PC_Fe := pc_cont
+  io.PC_Fe := pc_next
+  // io.PC_Fe := pc_cont
   
  // Customization 2017 /\/\/\/\/\/\/\
  
