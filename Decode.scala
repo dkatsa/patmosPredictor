@@ -438,7 +438,6 @@ class Decode() extends Module {
   
   
   // Update delay slot information
-  // Notes 2017 : Why it stays two cycles in the State "TWO" ?
   when(io.ena) {
     val decDelaySlot = inDelaySlot - UInt(1)
     inDelaySlot := //Mux(io.choose_PC === UInt(1),UInt(0),// Customization 2017 
