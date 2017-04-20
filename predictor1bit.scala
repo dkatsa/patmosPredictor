@@ -100,7 +100,7 @@ class predictor1bit() extends Module {
    // when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
    when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX))){
       io.choose_PC := UInt(1)
-      io.target_out := targetPC_Reg_Dec
+      io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
       io.choose_PC := UInt(0)
       io.target_out := UInt(0)
