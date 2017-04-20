@@ -64,7 +64,7 @@ class predictor1bit() extends Module {
    //Forwarding 
    val predictor_Dec = Mux(io.exfe.doBranch & (! io.pr_ex.override_brflush) & (!io.pr_ex.override_brflush_value) ,UInt(0), predictor_Dec_Res)
    // Delay doCallRet
-   val doCallRet_Dec = Reg(init = UInt(0,PC_SIZE), next = io.memfe.doCallRet)
+   val doCallRet_Dec = Reg(init = Bool(false), next = io.memfe.doCallRet)
    // Avoid pseudoFounds for small PC. Fix me with more efficiency way!!!!!! 
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
@@ -77,7 +77,7 @@ class predictor1bit() extends Module {
    // io.isBranch_Ex_deb := isBranch_Ex
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    // Delay doCallRet
-   val doCallRet_Ex = Reg(init = UInt(0,PC_SIZE), next = doCallRet_Dec)
+   val doCallRet_Ex = Reg(init = Bool(false), next = doCallRet_Dec)
    
    // io.predictor_Ex_deb := predictor_Ex
    // val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
