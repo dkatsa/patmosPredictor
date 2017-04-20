@@ -333,7 +333,7 @@ class FetchIO extends Bundle() {
   val correct_PC = UInt(INPUT, 1) 
   val prex = new PrEx().asInput
   // Debugging 2017 \/\/\/\/
-  val PC_next = UInt(OUTPUT, PC_SIZE) 
+  // val PC_next = UInt(OUTPUT, PC_SIZE) 
   // Debugging 2017 /\/\/\/\
   
   
