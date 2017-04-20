@@ -151,7 +151,7 @@ class predictor1bit() extends Module {
       // override_brflush_sig := Bool(false) 
       // override_brflush_value_sig := Bool(false) 
    // }
-   when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
+   when( found_Ex && (predictor_Ex === UInt(1))){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
@@ -177,7 +177,7 @@ class predictor1bit() extends Module {
    // }
    
    
-   when( (found_Ex && isBranch_Ex) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1)))){
+   when( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1)))){
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
