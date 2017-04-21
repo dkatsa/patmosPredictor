@@ -157,7 +157,7 @@ class Fetch(fileName : String) extends Module {
    
          Mux(io.Stall_correct && Bool(false) , pcOdd_stall, // Shift down 
          Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
-         Mux((io.memfe.doCallRet && !io.Stall_correct), io.icachefe.relPc.toUInt,
+         Mux((io.memfe.doCallRet && io.Stall_correct), io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd)))))
@@ -171,7 +171,7 @@ class Fetch(fileName : String) extends Module {
   
          Mux(io.Stall_correct && Bool(false) , pcEven_stall,  // Shift down 
          Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
-         Mux((io.memfe.doCallRet && !io.Stall_correct), io.icachefe.relPc.toUInt + UInt(2),
+         Mux((io.memfe.doCallRet && io.Stall_correct), io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even)))))
