@@ -175,16 +175,18 @@ class Fetch(fileName : String) extends Module {
   
  // Customization 2017 \/\/\/\/\/\/\/
  // Stalls with Enable closed!
-   when( (!io.ena) && (io.choose_PC === UInt(1)) ) {
+   when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
       stall := Bool(true)
    }.elsewhen(! stall){
       pcOdd_decEx := pcOdd_feDec
       pcEven_decEx := pcEven_feDec
+      stall := Bool(false)
    }.otherwise{
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
+      stall := Bool(false)
    }
  
   // io.PC_next := pc_next

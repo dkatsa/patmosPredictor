@@ -190,10 +190,19 @@ class predictor1bit() extends Module {
    
    // Stall correct due to closed enable!
    
-   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && enableReg) ) {
+   // when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && enableReg) ) {
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && io.ena) ) {
       stallCorrect := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
    }
 }
+
+
+
+
+
+
+
+
