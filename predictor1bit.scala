@@ -76,7 +76,7 @@ class predictor1bit() extends Module {
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    // io.PC_Ex_deb := PC_Ex
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
-   val isBranch_Ex = Reg(init = Bool(false), next = io.isBranch_Dec)
+   val isBranch_Ex = Reg(init = Bool(false), next = (io.isBranch_Dec && io.ena) )
    // io.isBranch_Ex_deb := isBranch_Ex
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    // Delay doCallRet
