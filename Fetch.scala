@@ -140,13 +140,23 @@ class Fetch(fileName : String) extends Module {
   // Customization 2017.1      // Stored and delayed the original PCs   
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
+  // width = MAX_OFF_WIDTH+1
+   // Stall doCallRet operation after closed enable.
+   val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
+  
+   val stall_doCallRet = Reg(init = Bool(false), next = io.Stall_correct )
+  
+  
+  
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
    val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
+   
+         Mux(io.Stall_correct , pcOdd_stall, // Shift down 
+         Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
-         Mux(io.Stall_correct === UInt(1), pcOdd_stall, // Shift down 
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd))))
@@ -157,8 +167,10 @@ class Fetch(fileName : String) extends Module {
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
   val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
+  
+         Mux(io.Stall_correct , pcEven_stall,  // Shift down 
+         Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
-         Mux(io.Stall_correct === UInt(1), pcEven_stall,  // Shift down 
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even))))

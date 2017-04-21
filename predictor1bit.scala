@@ -121,7 +121,7 @@ class predictor1bit() extends Module {
       }
    }
    
-   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || (stallCorrect && io.ena) ){
+   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((stallCorrect || correct_stall ) && io.ena ) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
