@@ -143,8 +143,10 @@ class Fetch(fileName : String) extends Module {
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
+   val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
+         Mux(io.Stall_correct === UInt(1), pcOdd_stall, // Shift down 
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd)))
@@ -153,8 +155,10 @@ class Fetch(fileName : String) extends Module {
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
+  val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
+         Mux(io.Stall_correct === UInt(1), pcEven_stall,  // Shift down 
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even)))
@@ -174,7 +178,7 @@ class Fetch(fileName : String) extends Module {
 
   
  // Customization 2017 \/\/\/\/\/\/\/
- // Stalls with Enable closed!
+ // Stalls with Enable closed!      io.Stall_correct
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
@@ -182,6 +186,15 @@ class Fetch(fileName : String) extends Module {
       pcOdd_decEx := pcOdd_feDec
       pcEven_decEx := pcEven_feDec
    }
+   
+   // Every time a correct happen store the targets
+   when(io.correct_PC === UInt(1)){
+      pcOdd_stall := pcOdd_decEx
+      pcEven_stall := pcEven_decEx
+   }
+   
+   
+   
    
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       stall := Bool(true)

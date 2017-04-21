@@ -17,26 +17,13 @@ class predictor1bit() extends Module {
       
       // call from MEM
       val memfe = new MemFe().asInput
-      
-      
-      // Outputs for Debugging 2017 \/\/\/\/\/
-      
-      val Misspredict_dep = Bool(OUTPUT)
-      
-      
-      // val PC_Dec_deb = UInt(OUTPUT, PC_SIZE) 
-      // val PC_Ex_deb = UInt(OUTPUT, PC_SIZE) 
-      // val found_Ex_deb = Bool(OUTPUT)
-      // val isBranch_Ex_deb = Bool(OUTPUT)
-      // val predictor_Ex_deb = UInt(OUTPUT,1)
-      // val testWhen = Bool(OUTPUT)
-      // Outputs for Debugging 2017 /\/\/\/\/\
+      // Stall correct
+      val Stall_correct = Bool(OUTPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
          correct_PC := UInt(0)
          target_out := UInt(0,PC_SIZE)
-         // testWhen := Bool(false)
       }
    }
    
@@ -51,16 +38,19 @@ class predictor1bit() extends Module {
    val PC_SIZE_ONE = PC_SIZE - 1
 //####### Fetch #########################################################################
    //    The main memory 
+   val correct_Reg = Reg(init = Bool(false), next = io.correct_PC === UInt(1))
+   val enableReg = Reg(init = Bool(false), next = io.ena)
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
+   
+   val correct_stall = Reg(init = Bool(false) )
+   
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
-   // val enableReg = Reg(init = Bool(false))
    val stallCorrect = Reg(init = Bool(false))
    val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  ))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
-   // io.PC_Dec_deb := PC_Dec
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
    val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
@@ -72,54 +62,41 @@ class predictor1bit() extends Module {
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
-   // io.found_Ex_deb := found_Ex
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
-   // io.PC_Ex_deb := PC_Ex
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
    val isBranch_Ex = Reg(init = Bool(false), next = (io.isBranch_Dec && io.ena) )
-   // io.isBranch_Ex_deb := isBranch_Ex
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    // Delay doCallRet
    val doCallRet_Ex = Reg(init = Bool(false), next = doCallRet_Dec)
    
-   // io.predictor_Ex_deb := predictor_Ex
-   // val correct_PC_sig = Mux(( found_Ex && isBranch_Ex && (!io.exfe.doBranch) && (predictor_Ex === UInt(1))),UInt(1),UInt(0)) 
-   
-   // delay overrides
-   // val override_brflush_sig = Bool()
-   // val override_brflush_value_sig = Bool()
-   // val override_brflush_reg = Reg(init = Bool(false), next = override_brflush_sig)
-   // val override_brflush_value_reg = Reg(init = Bool(false), next = override_brflush_value_sig )
-   // override_brflush_sig := Bool(false)
-   // override_brflush_value_sig := Bool(false)
-   
-   // io.pr_ex.override_brflush := (override_brflush_reg || override_brflush_sig) //&& (!io.correct_PC)
-   // io.pr_ex.override_brflush_value := (override_brflush_value_reg || override_brflush_value_sig) // && (!io.correct_PC)
    
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 //####### Debugging ###########################################################
    
-   
 
 //####### Fetch ###############################################################
 
-
+ // (correct_Reg && enableReg && !io.ena)
+   
+ // On the edge when correct is about to close store Information for after enable  
+   when(correct_Reg && enableReg && !io.ena){
+      correct_stall := Bool(true)
+   }.elsewhen(io.ena){
+      correct_stall := Bool(false)
+   }
+   io.Stall_correct := correct_stall
    
 //####### Decode ##############################################################
    
-   // when ( io.isBranch_Dec && (predictor_Dec === UInt(1)) && found_Dec){
    when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena){
       io.choose_PC := UInt(1)
-      // enableReg := io.ena
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
       io.choose_PC := UInt(0)
       io.target_out := UInt(0)
    }
-   
-   
-   
+      
 //####### Execute #############################################################
    
    // Logic for upadating the memories of BTB
@@ -129,13 +106,10 @@ class predictor1bit() extends Module {
          PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
-         io.Misspredict_dep := Bool(false)
       // Else there is inside the memory and it misspredict.  
       }.otherwise{ 
-         io.Misspredict_dep := Bool(false)
          when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) ^ io.exfe.doBranch) ){
             predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1) - predictor_Ex
-            io.Misspredict_dep := Bool(true)
          }
          // Different Target with the predicted one 
          when( isBranch_Ex && found_Ex && (predictor_Ex === UInt(1)) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
@@ -145,29 +119,8 @@ class predictor1bit() extends Module {
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
-   }.otherwise{
-      io.Misspredict_dep := Bool(false)
    }
    
-   
-   // Logic to control the manual flush
-   // when( found_Ex && isBranch_Ex && (predictor_Ex === UInt(1))){
-      // when( io.exfe.doBranch){
-        // when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
-           // override_brflush_sig := Bool(false) 
-           // override_brflush_value_sig := Bool(false) // Dont care
-        // }.otherwise{
-           // override_brflush_sig := Bool(true) 
-           // override_brflush_value_sig := Bool(false) 
-        // }
-      // }.otherwise{
-        // override_brflush_sig := Bool(true) 
-        // override_brflush_value_sig := Bool(true) 
-      // }
-   // }.otherwise{
-      // override_brflush_sig := Bool(false) 
-      // override_brflush_value_sig := Bool(false) 
-   // }
    when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || (stallCorrect && io.ena) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
@@ -186,16 +139,6 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   // io.testWhen := Bool(false)
-   // when( (io.found_Ex_deb && io.isBranch_Ex_deb) && ((! io.exfe.doBranch) && (io.predictor_Ex_deb === UInt(1)))){
-      // io.testWhen := Bool(true)
-   // }.otherwise{
-      // io.testWhen := Bool(false)
-   // }
-   
-   // Stall correct due to closed enable!
-   
-   // when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && enableReg) ) {
    when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && io.ena) ) {
       stallCorrect := ! io.ena
       io.correct_PC := UInt(1) 
@@ -203,6 +146,7 @@ class predictor1bit() extends Module {
       io.correct_PC := UInt(0)
    }
 }
+
 
 
 
