@@ -178,16 +178,21 @@ class Fetch(fileName : String) extends Module {
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
-      stall := Bool(true)
    }.elsewhen(! stall){
       pcOdd_decEx := pcOdd_feDec
       pcEven_decEx := pcEven_feDec
-      stall := Bool(false)
-   }.otherwise{
-      pcOdd_decEx := pcOdd_decEx
-      pcEven_decEx := pcEven_decEx
+   }
+   
+   when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
+      stall := Bool(true)
+   }.elsewhen(io.ena){
       stall := Bool(false)
    }
+      
+   
+   
+   
+   
  
   // io.PC_next := pc_next
   io.PC_Fe := pcReg
