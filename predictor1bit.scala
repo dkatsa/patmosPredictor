@@ -145,6 +145,8 @@ class predictor1bit() extends Module {
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
+   }.otherwise{
+      io.Misspredict_dep := Bool(false)
    }
    
    
