@@ -144,7 +144,7 @@ class Fetch(fileName : String) extends Module {
    // Stall doCallRet operation after closed enable.
    val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
   
-   val stall_doCallRet = Reg(init = Bool(false), next = io.Stall_correct )
+   val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
   
   
   
