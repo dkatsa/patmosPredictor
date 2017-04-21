@@ -58,7 +58,7 @@ class predictor1bit() extends Module {
    // Find inside BTB the respective PC 
    // val enableReg = Reg(init = Bool(false))
    val stallCorrect = Reg(init = Bool(false))
-   val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  )
+   val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  ))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    // io.PC_Dec_deb := PC_Dec
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
