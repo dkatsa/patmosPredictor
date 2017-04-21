@@ -140,11 +140,12 @@ class Fetch(fileName : String) extends Module {
   // Customization 2017.1      // Stored and delayed the original PCs   
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
-  // width = MAX_OFF_WIDTH+1
+  
    // Stall doCallRet operation after closed enable.
    val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
   
    val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
+   val stall_doCallRet_2 = Reg(init = Bool(false), next = stall_doCallRet)
   
   
   
@@ -154,7 +155,7 @@ class Fetch(fileName : String) extends Module {
    val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
    
-         Mux(io.Stall_correct , pcOdd_stall, // Shift down 
+         Mux(io.Stall_correct && Bool(false) , pcOdd_stall, // Shift down 
          Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
@@ -168,7 +169,7 @@ class Fetch(fileName : String) extends Module {
   val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
   
-         Mux(io.Stall_correct , pcEven_stall,  // Shift down 
+         Mux(io.Stall_correct && Bool(false) , pcEven_stall,  // Shift down 
          Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
@@ -199,13 +200,15 @@ class Fetch(fileName : String) extends Module {
       pcEven_decEx := pcEven_feDec
    }
    
-   // Every time a correct happen store the targets
+   // Every time a correct happen store the targets to be prepare for a sudden enable closed
    when(io.correct_PC === UInt(1)){
       pcOdd_stall := pcOdd_decEx
       pcEven_stall := pcEven_decEx
    }
    
-   
+   when (io.memfe.doCallRet){
+      stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)
+   }
    
    
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
