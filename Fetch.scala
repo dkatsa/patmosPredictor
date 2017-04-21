@@ -149,7 +149,7 @@ class Fetch(fileName : String) extends Module {
          Mux(io.Stall_correct === UInt(1), pcOdd_stall, // Shift down 
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
-         pc_next_Odd)))
+         pc_next_Odd))))
          
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
@@ -161,7 +161,7 @@ class Fetch(fileName : String) extends Module {
          Mux(io.Stall_correct === UInt(1), pcEven_stall,  // Shift down 
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
-         pc_next_Even)))
+         pc_next_Even))))
 
          
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
