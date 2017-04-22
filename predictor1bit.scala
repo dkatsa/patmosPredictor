@@ -123,6 +123,10 @@ class predictor1bit() extends Module {
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
+      when((found_Dec && ((predictor_Dec_Res === UInt(1)) && (!io.isBranch_Dec) && io.ena))) {
+         predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0)
+         PC_BTB(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
+      }
    }
    
    // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
