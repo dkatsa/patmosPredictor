@@ -152,11 +152,12 @@ class Fetch(fileName : String) extends Module {
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
-   val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
+   // val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
    
-         Mux(io.Stall_correct && Bool(false) , pcOdd_stall, // Shift down 
-         Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
+         // Mux(io.Stall_correct && Bool(false) , pcOdd_stall, // Shift down 
+         // Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
+         Mux((stall_doCallRet), icachefe_relPc_stall.toUInt,
          Mux((io.memfe.doCallRet ), io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
@@ -166,11 +167,12 @@ class Fetch(fileName : String) extends Module {
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
-  val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
+  // val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
   
-         Mux(io.Stall_correct && Bool(false) , pcEven_stall,  // Shift down 
-         Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
+         // Mux(io.Stall_correct && Bool(false) , pcEven_stall,  // Shift down 
+         // Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
+         Mux((stall_doCallRet), icachefe_relPc_stall.toUInt + UInt(2),
          Mux((io.memfe.doCallRet ), io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
@@ -201,10 +203,10 @@ class Fetch(fileName : String) extends Module {
    }
    
    // Every time a correct happen store the targets to be prepare for a sudden enable closed
-   when(io.correct_PC === UInt(1)){
-      pcOdd_stall := pcOdd_decEx
-      pcEven_stall := pcEven_decEx
-   }
+   // when(io.correct_PC === UInt(1)){
+      // pcOdd_stall := pcOdd_decEx
+      // pcEven_stall := pcEven_decEx
+   // }
    
    when (io.memfe.doCallRet){
       stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)

@@ -48,7 +48,7 @@ class predictor1bit() extends Module {
    
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
-   val stallCorrect = Reg(init = Bool(false))
+   val Correct_Enable = Reg(init = Bool(false))
    val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  ))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
@@ -121,8 +121,8 @@ class predictor1bit() extends Module {
       }
    }
    
-   // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((stallCorrect || correct_stall ) && io.ena ) ){
-   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((stallCorrect ) && io.ena ) ){
+   // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
+   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
@@ -140,8 +140,8 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (stallCorrect && io.ena) ) {
-      stallCorrect := ! io.ena
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) ) {
+      Correct_Enable := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
@@ -151,6 +151,17 @@ class predictor1bit() extends Module {
 
 
 
-
-
-
+// FSM
+  
+// val s_idle :: s_5 :: s_10 :: s_15 :: s_ok :: Nil = Enum(5){ UFix() } // Count the Enums !!!!!!!!
+// val state = Reg(init = s_idle)
+  
+// when ( state === s_idle ){
+   // when(  ) {
+   // }
+// }
+  
+  
+  
+  
+  
