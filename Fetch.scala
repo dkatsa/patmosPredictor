@@ -142,10 +142,10 @@ class Fetch(fileName : String) extends Module {
    val icachefe_relPc_stall2 = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = icachefe_relPc_stall)
   
    val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
-   val stall_doCallRet2 = Reg(init = Bool(false), next = stall_doCallRet)
+   val stall_doCallRet2 = Reg(init = Bool(false), next = (stall_doCallRet && (! io.Stall_correct)) )
    // val stall_doCallRet3 = Reg(init = Bool(false), next = (stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ))
    val override_doCallRet = Mux((stall_doCallRet || stall_doCallRet2), Bool(false) , io.memfe.doCallRet )
-   debug(override_doCallRet)
+
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
