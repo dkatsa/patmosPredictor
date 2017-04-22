@@ -124,7 +124,6 @@ class Fetch(fileName : String) extends Module {
   val instr_b_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrOdd, io.icachefe.instrEven)
 
   val stall = Reg(init = Bool(false))
-
    
    // Customization 2017 /\/\/\/\/\/\/\
   
@@ -133,32 +132,25 @@ class Fetch(fileName : String) extends Module {
                     Mux(selCache, instr_a_cache, instr_a_rom))
   val instr_b = Mux(selSpm, instr_b_ispm,
                     Mux(selCache, instr_b_cache, instr_b_rom))
-
   val b_valid = instr_a(31) === Bits(1)
-
   val pc_cont = Mux(b_valid, pcReg + UInt(2), pcReg + UInt(1))
   // Customization 2017.1      // Stored and delayed the original PCs   
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
-  
    // Stall doCallRet operation after closed enable.
+   val override_doCallRet = Mux (stall_doCallRet stall_doCallRet2, Bool(false) , io.memfe.doCallRet )
    val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
+   val icachefe_relPc_stall2 = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = icachefe_relPc_stall)
   
    val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
-   val stall_doCallRet_2 = Reg(init = Bool(false), next = stall_doCallRet)
-  
-  
+   val stall_doCallRet2 = Reg(init = Bool(false), next = stall_doCallRet)
   
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
-   // val pcOdd_stall = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
-   
-         // Mux(io.Stall_correct && Bool(false) , pcOdd_stall, // Shift down 
-         // Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt,
-         Mux((stall_doCallRet), icachefe_relPc_stall.toUInt,
-         Mux((io.memfe.doCallRet ), io.icachefe.relPc.toUInt,
+         Mux((stall_doCallRet2), icachefe_relPc_stall2.toUInt,
+         Mux((override_doCallRet), io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd))))
@@ -167,18 +159,13 @@ class Fetch(fileName : String) extends Module {
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
-  // val pcEven_stall = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
-  
-         // Mux(io.Stall_correct && Bool(false) , pcEven_stall,  // Shift down 
-         // Mux((stall_doCallRet && !io.Stall_correct), icachefe_relPc_stall.toUInt + UInt(2),
-         Mux((stall_doCallRet), icachefe_relPc_stall.toUInt + UInt(2),
-         Mux((io.memfe.doCallRet ), io.icachefe.relPc.toUInt + UInt(2),
+         Mux((stall_doCallRet2), icachefe_relPc_stall2.toUInt + UInt(2),
+         Mux((override_doCallRet), io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even))))
 
-         
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
   addrEven := addrEvenReg
   addrOdd := addrOddReg
@@ -186,14 +173,11 @@ class Fetch(fileName : String) extends Module {
     addrEven := Cat((pc_inc)(PC_SIZE - 1, 1), Bits(0)).toUInt
     addrOdd := Cat((pc_next)(PC_SIZE - 1, 1), Bits(1)).toUInt
     pcReg := pc_next // Customization 2017
-    // pcReg := MUX(io.choose_PC === UInt(0),io.target_out,pc_next) // Customization 2017
   }
 
   val relPc = pcReg - relBaseReg
 
-  
  // Customization 2017 \/\/\/\/\/\/\/
- // Stalls with Enable closed!      io.Stall_correct
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
@@ -202,16 +186,9 @@ class Fetch(fileName : String) extends Module {
       pcEven_decEx := pcEven_feDec
    }
    
-   // Every time a correct happen store the targets to be prepare for a sudden enable closed
-   // when(io.correct_PC === UInt(1)){
-      // pcOdd_stall := pcOdd_decEx
-      // pcEven_stall := pcEven_decEx
-   // }
-   
    when (io.memfe.doCallRet){
       stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)
    }
-   
    
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       stall := Bool(true)
@@ -221,25 +198,17 @@ class Fetch(fileName : String) extends Module {
       
    
    
-   
-   
  
-  // io.PC_next := pc_next
   io.PC_Fe := pcReg
-  
  // Customization 2017 /\/\/\/\/\/\/\
- 
   io.fedec.pc := pcReg
   io.fedec.base := baseReg
   io.fedec.reloc := relocReg
   io.fedec.relPc := relPc
   io.fedec.instr_a := instr_a
   io.fedec.instr_b := instr_b
-
   io.feex.pc := Mux(b_valid, relPc + UInt(2), relPc + UInt(1))
-
   //outputs to icache
   io.feicache.addrEven := addrEven
   io.feicache.addrOdd := addrOdd
-
 }
