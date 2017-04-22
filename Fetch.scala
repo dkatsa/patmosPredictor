@@ -138,7 +138,7 @@ class Fetch(fileName : String) extends Module {
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
    // Stall doCallRet operation after closed enable.
-   val override_doCallRet = Mux (stall_doCallRet stall_doCallRet2, Bool(false) , io.memfe.doCallRet )
+   val override_doCallRet = Mux (stall_doCallRet || stall_doCallRet2, Bool(false) , io.memfe.doCallRet )
    val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
    val icachefe_relPc_stall2 = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = icachefe_relPc_stall)
   
