@@ -130,7 +130,11 @@ class predictor1bit() extends Module {
    }
    
    // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
+<<<<<<< HEAD
    when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) || (found_Dec && ((predictor_Dec_Res === UInt(1)) && (!io.isBranch_Dec) && io.ena)) ){
+=======
+   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) ){
+>>>>>>> parent of 43db3c1... correct on decode!
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
@@ -148,7 +152,11 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
+<<<<<<< HEAD
    when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) || (found_Dec && ((predictor_Dec_Res === UInt(1)) && (!io.isBranch_Dec) && io.ena)) ) {
+=======
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) ) {
+>>>>>>> parent of 43db3c1... correct on decode!
       Correct_Enable := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
