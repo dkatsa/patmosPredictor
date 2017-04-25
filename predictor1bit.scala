@@ -90,7 +90,7 @@ class predictor1bit() extends Module {
       PC_BTB_Dec := PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       targetPC_Reg_Dec := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
-      choose_PC_Dec := (io.choose_PC === UInt(1)) && (! io.doCallRet) && (! io.flush)
+      choose_PC_Dec := (io.choose_PC === UInt(1)) && (! io.memfe.doCallRet) && (! io.flush)
    // Execute
       choose_PC_Ex := (choose_PC_Dec && (! io.flush))
       found_Ex := found_Dec
