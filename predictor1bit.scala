@@ -108,14 +108,18 @@ class predictor1bit() extends Module {
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       // Else there is inside the memory and it misspredict.  
       }.otherwise{ 
-         when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) ^ io.exfe.doBranch) ){
-            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1) - predictor_Ex
+         // when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) ^ io.exfe.doBranch) ){
+         when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) && (! io.exfe.doBranch)) ){
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0)
+            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
+         }.elsewhen( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(0)) && io.exfe.doBranch) ){ // Maybe remove it!
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
+            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
+         
+         
          // Different Target with the predicted one 
-         when( isBranch_Ex && found_Ex && (predictor_Ex === UInt(1)) && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex) ){
-            targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
-         // Misspredict the taken branch
-         }.elsewhen( isBranch_Ex && found_Ex && (predictor_Ex === UInt(0)) && io.exfe.doBranch ){
+         when( isBranch_Ex && found_Ex && io.exfe.doBranch ){
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
