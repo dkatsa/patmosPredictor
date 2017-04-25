@@ -64,7 +64,10 @@ class predictor1bit() extends Module {
    val choose_PC_Dec = Reg(init = Bool(false) )
    // Avoid pseudoFounds for small PC. Fix me with more efficiency way!!!!!! 
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
+   
+   val correct_on_decode = Mux( ! io.isBranch_Dec , Bool(true), Bool(false))
 //####### Execute #########################################################################
+   val correct_on_decode_Ex = Reg(init = Bool(false) )
    // val choose_PC_Ex_next = Mux(io.ena, (choose_PC_Dec && (! io.flush)), Bool(false))
    val choose_PC_Ex = Reg(init = Bool(false) )
    
@@ -92,7 +95,8 @@ class predictor1bit() extends Module {
       predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       choose_PC_Dec := (io.choose_PC === UInt(1)) && (! io.memfe.doCallRet) && (! io.flush)
    // Execute
-      choose_PC_Ex := (choose_PC_Dec && (! io.flush))
+      correct_on_decode_Ex := correct_on_decode
+      choose_PC_Ex := (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) 
       found_Ex := found_Dec
       PC_Ex := PC_Dec
       targetPC_Reg_Ex := targetPC_Reg_Dec
@@ -105,6 +109,7 @@ class predictor1bit() extends Module {
       predictor_Dec_Res := predictor_Dec_Res
       targetPC_Reg_Dec := targetPC_Reg_Dec
       choose_PC_Dec := choose_PC_Dec
+      correct_on_decode_Ex := correct_on_decode_Ex
       choose_PC_Ex := choose_PC_Ex
       found_Ex := found_Ex
       PC_Ex := PC_Ex
@@ -164,6 +169,7 @@ class predictor1bit() extends Module {
          }
          
          
+         
          // Different Target with the predicted one 
          when( isBranch_Ex && found_Ex && io.exfe.doBranch ){
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
@@ -172,7 +178,7 @@ class predictor1bit() extends Module {
    }
    
    // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
-   when(found_Ex && (predictor_Ex === UInt(1)) && choose_PC_Ex ){
+   when((found_Ex && (predictor_Ex === UInt(1)) && choose_PC_Ex && (! correct_on_decode_Ex)) || (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
@@ -190,7 +196,7 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   when( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && choose_PC_Ex ) {
+   when( (found_Ex && (! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && choose_PC_Ex && (! correct_on_decode_Ex) || (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) {
       // Correct_Enable := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
