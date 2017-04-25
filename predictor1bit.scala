@@ -83,12 +83,15 @@ class predictor1bit() extends Module {
  
    // Those are the nexts of all the Flip-Flops
    when(io.ena){
+   // Fetch
+   // Decode
       found_D := ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  )
       PC_Dec := io.PC_Fe
       PC_BTB_Dec := PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       targetPC_Reg_Dec := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
-      choose_PC_Dec := io.choose_PC
+      choose_PC_Dec := io.choose_PC && (! io.doCallRet) && (! io.flush)
+   // Execute
       choose_PC_Ex := (choose_PC_Dec && (! io.flush))
       found_Ex := found_Dec
       PC_Ex := PC_Dec
