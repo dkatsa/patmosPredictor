@@ -52,7 +52,7 @@ class predictor1bit() extends Module {
    // val found_D_next = Mux(io.ena, io.choose_PC, Bool(false))
    val found_D = Reg(init = Bool(false) )
    val PC_Dec = Reg(init = UInt(0,PC_SIZE) )
-   val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
+   val PC_BTB_Dec = Reg(init = UInt(0,width=MSB) )  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE) )  // Store target_PC
    val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    //Forwarding ... When a choose happened , on decode, check the state of the overrides
@@ -66,13 +66,13 @@ class predictor1bit() extends Module {
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
    // val choose_PC_Ex_next = Mux(io.ena, (choose_PC_Dec && (! io.flush)), Bool(false))
-   val choose_PC_Ex = Reg(init = Bool(false), next = choose_PC_Ex_next)
+   val choose_PC_Ex = Reg(init = Bool(false) )
    
-   val found_Ex = Reg(init = Bool(false), next = found_Dec)
-   val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
-   val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
-   val isBranch_Ex = Reg(init = Bool(false), next = (io.isBranch_Dec && io.ena) )
-   val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
+   val found_Ex = Reg(init = Bool(false) )
+   val PC_Ex = Reg(init = UInt(0,PC_SIZE) )
+   val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE) )  // Store target_PC in Execute
+   val isBranch_Ex = Reg(init = Bool(false) )
+   val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    // Delay doCallRet
    // val doCallRet_Ex = Reg(init = Bool(false), next = doCallRet_Dec)
    
@@ -85,18 +85,29 @@ class predictor1bit() extends Module {
    when(io.ena){
       found_D := ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  )
       PC_Dec := io.PC_Fe
+      PC_BTB_Dec := PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       targetPC_Reg_Dec := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       choose_PC_Dec := io.choose_PC
       choose_PC_Ex := (choose_PC_Dec && (! io.flush))
       found_Ex := found_Dec
+      PC_Ex := PC_Dec
+      targetPC_Reg_Ex := targetPC_Reg_Dec
+      isBranch_Ex := (io.isBranch_Dec && io.ena)
+      predictor_Ex := predictor_Dec
    }.otherwise{
       found_D := found_D
       PC_Dec := PC_Dec
+      PC_BTB_Dec := PC_BTB_Dec
       predictor_Dec_Res := predictor_Dec_Res
       targetPC_Reg_Dec := targetPC_Reg_Dec
+      choose_PC_Dec := choose_PC_Dec
       choose_PC_Ex := choose_PC_Ex
       found_Ex := found_Ex
+      PC_Ex := PC_Ex
+      targetPC_Reg_Ex := targetPC_Reg_Ex
+      isBranch_Ex := isBranch_Ex
+      predictor_Ex := predictor_Ex
    }
  
  
