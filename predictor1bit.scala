@@ -15,6 +15,7 @@ class predictor1bit() extends Module {
       val correct_PC = UInt(OUTPUT,1)
       val target_out = UInt(OUTPUT,PC_SIZE)
       
+      val correct_on_decode_EN = Bool()
       // call from MEM
       val memfe = new MemFe().asInput
       // Stall correct
@@ -206,6 +207,10 @@ class predictor1bit() extends Module {
    }.otherwise{
       io.correct_PC := UInt(0)
    }
+   
+   io.correct_on_decode_EN := (correct_on_decode && (choose_PC_Dec && (! io.flush) ))
+   
+   
 }
 
 
