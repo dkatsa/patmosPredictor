@@ -131,7 +131,11 @@ class predictor1bit() extends Module {
    
    // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
 <<<<<<< HEAD
+<<<<<<< HEAD
    when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) || (found_Dec && ((predictor_Dec_Res === UInt(1)) && (!io.isBranch_Dec) && io.ena)) ){
+=======
+   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) ){
+>>>>>>> parent of 43db3c1... correct on decode!
 =======
    when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) ){
 >>>>>>> parent of 43db3c1... correct on decode!
@@ -153,7 +157,11 @@ class predictor1bit() extends Module {
    }
    
 <<<<<<< HEAD
+<<<<<<< HEAD
    when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) || (found_Dec && ((predictor_Dec_Res === UInt(1)) && (!io.isBranch_Dec) && io.ena)) ) {
+=======
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) ) {
+>>>>>>> parent of 43db3c1... correct on decode!
 =======
    when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) ) {
 >>>>>>> parent of 43db3c1... correct on decode!
