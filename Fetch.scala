@@ -138,34 +138,34 @@ class Fetch(fileName : String) extends Module {
    val override_branch = Mux( io.prex.override_brflush, io.prex.override_brflush_value, io.exfe.doBranch)
   
    // Stall doCallRet operation after closed enable.
-   val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
-   val icachefe_relPc_stall2 = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = icachefe_relPc_stall)
+   // val icachefe_relPc_stall = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = io.icachefe.relPc)
+   // val icachefe_relPc_stall2 = Reg(init = UInt(1, MAX_OFF_WIDTH+1), next = icachefe_relPc_stall)
   
-   val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
-   val stall_doCallRet2 = Reg(init = Bool(false), next = (stall_doCallRet && (! io.Stall_correct)) )
+   // val stall_doCallRet = Reg(init = Bool(false), next = (io.Stall_correct && io.memfe.doCallRet) )
+   // val stall_doCallRet2 = Reg(init = Bool(false), next = (stall_doCallRet && (! io.Stall_correct)) )
    // val stall_doCallRet3 = Reg(init = Bool(false), next = (stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ))
-   val override_doCallRet = Mux((stall_doCallRet || stall_doCallRet2), Bool(false) , io.memfe.doCallRet )
+   // val override_doCallRet = Mux((stall_doCallRet || stall_doCallRet2), Bool(false) , io.memfe.doCallRet )
 
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
    val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
-         Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt,
-         Mux((override_doCallRet), io.icachefe.relPc.toUInt,
+         // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt,
+         Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
-         pc_next_Odd))))
+         pc_next_Odd)))
          
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
   val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
-         Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt + UInt(2),
-         Mux((override_doCallRet), io.icachefe.relPc.toUInt + UInt(2),
+         // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt + UInt(2),
+         Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
-         pc_next_Even))))
+         pc_next_Even)))
 
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
   addrEven := addrEvenReg
@@ -187,9 +187,9 @@ class Fetch(fileName : String) extends Module {
       pcEven_decEx := pcEven_feDec
    }
    
-   when (io.memfe.doCallRet){
-      stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)
-   }
+   // when (io.memfe.doCallRet){
+      // stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)
+   // }
    
    when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
       stall := Bool(true)

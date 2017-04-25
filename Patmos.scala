@@ -98,7 +98,7 @@ class PatmosCore(binFile: String) extends Module {
   fetch.io.correct_PC <> pythia.io.correct_PC
   fetch.io.choose_PC <> pythia.io.choose_PC
   fetch.io.target_out <> pythia.io.target_out
-  fetch.io.Stall_correct <> pythia.io.Stall_correct
+  // fetch.io.Stall_correct <> pythia.io.Stall_correct
   decode.io.choose_PC <> pythia.io.choose_PC
   execute.io.prex <> pythia.io.pr_ex
   // Customization 2017  /\/\/\/\/\

@@ -334,7 +334,7 @@ class FetchIO extends Bundle() {
   val prex = new PrEx().asInput
   // Debugging 2017 \/\/\/\/
    // Stall correct
-   val Stall_correct = Bool(INPUT)
+   // val Stall_correct = Bool(INPUT)
   // Debugging 2017 /\/\/\/\
   
   

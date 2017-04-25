@@ -18,7 +18,7 @@ class predictor1bit() extends Module {
       // call from MEM
       val memfe = new MemFe().asInput
       // Stall correct
-      val Stall_correct = Bool(OUTPUT)
+      // val Stall_correct = Bool(OUTPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
@@ -39,12 +39,12 @@ class predictor1bit() extends Module {
 //####### Fetch #########################################################################
    //    The main memory 
    val correct_Reg = Reg(init = Bool(false), next = io.correct_PC === UInt(1))
-   val enableReg = Reg(init = Bool(false), next = io.ena)
+   // val enableReg = Reg(init = Bool(false), next = io.ena)
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
    
-   val correct_stall = Reg(init = Bool(false) )
+   // val correct_stall = Reg(init = Bool(false) )
    
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
@@ -67,7 +67,7 @@ class predictor1bit() extends Module {
    val isBranch_Ex = Reg(init = Bool(false), next = (io.isBranch_Dec && io.ena) )
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor_Dec)  // Store predictor
    // Delay doCallRet
-   val doCallRet_Ex = Reg(init = Bool(false), next = doCallRet_Dec)
+   // val doCallRet_Ex = Reg(init = Bool(false), next = doCallRet_Dec)
    
    
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,12 +80,12 @@ class predictor1bit() extends Module {
  // (correct_Reg && enableReg && !io.ena)
    
  // On the edge when correct is about to close store Information for after enable  
-   when(correct_Reg && enableReg && !io.ena){
-      correct_stall := Bool(true)
-   }.elsewhen(io.ena){
-      correct_stall := Bool(false)
-   }
-   io.Stall_correct := correct_stall
+   // when(correct_Reg && enableReg && !io.ena){
+      // correct_stall := Bool(true)
+   // }.elsewhen(io.ena){
+      // correct_stall := Bool(false)
+   // }
+   // io.Stall_correct := correct_stall
    
 //####### Decode ##############################################################
    
@@ -126,7 +126,7 @@ class predictor1bit() extends Module {
    }
    
    // when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable || correct_stall ) && io.ena ) ){
-   when( (found_Ex && (predictor_Ex === UInt(1)) && (!doCallRet_Ex))  || ((Correct_Enable ) && io.ena ) ){
+   when( (found_Ex && (predictor_Ex === UInt(1)) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
            io.pr_ex.override_brflush := Bool(false) 
@@ -144,8 +144,8 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && (!doCallRet_Ex)) || (Correct_Enable && io.ena) ) {
-      Correct_Enable := ! io.ena
+   when(( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) ) {
+      // Correct_Enable := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
