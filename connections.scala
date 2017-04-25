@@ -333,7 +333,7 @@ class FetchIO extends Bundle() {
   val correct_PC = UInt(INPUT, 1) 
   val prex = new PrEx().asInput
   
-  val correct_on_decode_EN = Bool()
+  val correct_on_decode_EN = Bool(INPUT)
   // Debugging 2017 \/\/\/\/
    // Stall correct
    // val Stall_correct = Bool(INPUT)
