@@ -50,22 +50,22 @@ class predictor1bit() extends Module {
    // Find inside BTB the respective PC 
    // val Correct_Enable = Reg(init = Bool(false))
    // val found_D_next = Mux(io.ena, io.choose_PC, Bool(false))
-   val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  ))
-   val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
+   val found_D = Reg(init = Bool(false) )
+   val PC_Dec = Reg(init = UInt(0,PC_SIZE) )
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
-   val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
+   val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE) )  // Store target_PC
    val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    //Forwarding ... When a choose happened , on decode, check the state of the overrides
    val predictor_Dec = Mux(io.exfe.doBranch && (! io.pr_ex.override_brflush) && (!io.pr_ex.override_brflush_value) && io.ena ,UInt(0), predictor_Dec_Res)
    // Delay doCallRet
    // val doCallRet_Dec = Reg(init = Bool(false), next = io.memfe.doCallRet)
    
-   val choose_PC_Dec_next = Mux(io.ena, io.choose_PC, Bool(false))
-   val choose_PC_Dec = Reg(init = Bool(false), next = choose_PC_Dec_next)
+   // val choose_PC_Dec_next = Mux(io.ena, io.choose_PC, Bool(false))
+   val choose_PC_Dec = Reg(init = Bool(false) )
    // Avoid pseudoFounds for small PC. Fix me with more efficiency way!!!!!! 
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
-   val choose_PC_Ex_next = Mux(io.ena, (choose_PC_Dec && (! io.flush)), Bool(false))
+   // val choose_PC_Ex_next = Mux(io.ena, (choose_PC_Dec && (! io.flush)), Bool(false))
    val choose_PC_Ex = Reg(init = Bool(false), next = choose_PC_Ex_next)
    
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
@@ -83,9 +83,20 @@ class predictor1bit() extends Module {
  
    // Those are the nexts of all the Flip-Flops
    when(io.ena){
+      found_D := ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  )
+      PC_Dec := io.PC_Fe
+      targetPC_Reg_Dec := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
       predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
+      choose_PC_Dec := io.choose_PC
+      choose_PC_Ex := (choose_PC_Dec && (! io.flush))
+      found_Ex := found_Dec
    }.otherwise{
+      found_D := found_D
+      PC_Dec := PC_Dec
       predictor_Dec_Res := predictor_Dec_Res
+      targetPC_Reg_Dec := targetPC_Reg_Dec
+      choose_PC_Ex := choose_PC_Ex
+      found_Ex := found_Ex
    }
  
  
