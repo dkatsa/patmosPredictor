@@ -183,6 +183,8 @@ class PatmosCore(binFile: String) extends Module {
   val brflush = execute.io.brflush
   decode.io.flush := flush || brflush
   execute.io.flush := flush
+  // Customization 2017
+  pythia.io.flush := flush
 
   // Software resets
   icache.io.invalidate := exc.io.invalICache

@@ -18,7 +18,7 @@ class predictor1bit() extends Module {
       // call from MEM
       val memfe = new MemFe().asInput
       // Stall correct
-      // val Stall_correct = Bool(OUTPUT)
+      val flush = Bool(INPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
@@ -38,7 +38,7 @@ class predictor1bit() extends Module {
    val PC_SIZE_ONE = PC_SIZE - 1
 //####### Fetch #########################################################################
    //    The main memory 
-   val correct_Reg = Reg(init = Bool(false), next = io.correct_PC === UInt(1))
+   // val correct_Reg = Reg(init = Bool(false), next = io.correct_PC === UInt(1))
    // val enableReg = Reg(init = Bool(false), next = io.ena)
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
@@ -48,19 +48,26 @@ class predictor1bit() extends Module {
    
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
-   val Correct_Enable = Reg(init = Bool(false))
+   // val Correct_Enable = Reg(init = Bool(false))
+   // val found_D_next = Mux(io.ena, io.choose_PC, Bool(false))
    val found_D = Reg(init = Bool(false), next = ((PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena  ))
    val PC_Dec = Reg(init = UInt(0,PC_SIZE), next = io.PC_Fe)
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB), next = PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store target_PC
-   val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH), next = predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)))  // Store predictor
-   //Forwarding 
+   val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
+   //Forwarding ... When a choose happened , on decode, check the state of the overrides
    val predictor_Dec = Mux(io.exfe.doBranch && (! io.pr_ex.override_brflush) && (!io.pr_ex.override_brflush_value) && io.ena ,UInt(0), predictor_Dec_Res)
    // Delay doCallRet
-   val doCallRet_Dec = Reg(init = Bool(false), next = io.memfe.doCallRet)
+   // val doCallRet_Dec = Reg(init = Bool(false), next = io.memfe.doCallRet)
+   
+   val choose_PC_Dec_next = Mux(io.ena, io.choose_PC, Bool(false))
+   val choose_PC_Dec = Reg(init = Bool(false), next = choose_PC_Dec_next)
    // Avoid pseudoFounds for small PC. Fix me with more efficiency way!!!!!! 
    val found_Dec = Mux(targetPC_Reg_Dec === UInt(0,PC_SIZE), Bool(false), found_D) // Exception for small PC with MSB all zeros. 
 //####### Execute #########################################################################
+   val choose_PC_Ex_next = Mux(io.ena, (choose_PC_Dec && (! io.flush)), Bool(false))
+   val choose_PC_Ex = Reg(init = Bool(false), next = choose_PC_Ex_next)
+   
    val found_Ex = Reg(init = Bool(false), next = found_Dec)
    val PC_Ex = Reg(init = UInt(0,PC_SIZE), next = PC_Dec)
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE), next = targetPC_Reg_Dec)  // Store target_PC in Execute
@@ -72,8 +79,22 @@ class predictor1bit() extends Module {
    
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-//####### Debugging ###########################################################
-   
+//####### Stall with enable closed ############################################
+ 
+   // Those are the nexts of all the Flip-Flops
+   when(io.ena){
+      predictor_Dec_Res := predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
+   }.otherwise{
+      predictor_Dec_Res := predictor_Dec_Res
+   }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 //####### Fetch ###############################################################
 
@@ -89,7 +110,7 @@ class predictor1bit() extends Module {
    
 //####### Decode ##############################################################
    
-   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena){
+   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena && (! io.flush)){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
@@ -144,7 +165,7 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   when( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) ) {
+   when( (found_Ex ) && ((! io.exfe.doBranch) && (predictor_Ex === UInt(1))) && choose_PC_Ex ) {
       // Correct_Enable := ! io.ena
       io.correct_PC := UInt(1) 
    }.otherwise{
