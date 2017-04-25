@@ -97,7 +97,8 @@ class predictor1bit() extends Module {
       choose_PC_Dec := (io.choose_PC === UInt(1)) && (! io.memfe.doCallRet) && (! io.flush)
    // Execute
       correct_on_decode_Ex := correct_on_decode
-      choose_PC_Ex := (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) 
+      // choose_PC_Ex := (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) 
+      choose_PC_Ex := (choose_PC_Dec && (! io.flush) ) 
       found_Ex := found_Dec && (!(correct_on_decode && (choose_PC_Dec && (! io.flush) )))
       PC_Ex := PC_Dec
       targetPC_Reg_Ex := targetPC_Reg_Dec
