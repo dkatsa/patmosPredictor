@@ -109,14 +109,6 @@ class predictor1bit() extends Module {
       predictor_Ex := predictor_Ex
    }
  
- 
- 
- 
- 
- 
- 
- 
-
 //####### Fetch ###############################################################
 
 //####### Decode ##############################################################
@@ -148,8 +140,6 @@ class predictor1bit() extends Module {
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
          
-         
-         
          // Different Target with the predicted one 
          when( isBranch_Ex && found_Ex && io.exfe.doBranch ){
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
@@ -163,7 +153,7 @@ class predictor1bit() extends Module {
    
    when((found_Ex && (predictor_Ex === UInt(1)) && choose_PC_Ex ) || (correct_on_decode && (choose_PC_Dec && (! io.flush) ) ) ){
       when( io.exfe.doBranch){
-        when( io.exfe.branchPc =/= targetPC_Reg_Ex ){
+        when( io.exfe.branchPc =/= targetPC_Reg_Ex ){ // Check if we predict with different target.
            io.pr_ex.override_brflush := Bool(false) 
            io.pr_ex.override_brflush_value := Bool(false) // Dont care
         }.otherwise{
