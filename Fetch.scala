@@ -152,7 +152,7 @@ class Fetch(fileName : String) extends Module {
    val pc_next =
          // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt,
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
-         Mux(io.correct_on_decode_EN, pcOdd_feDec, 
+         Mux(io.correct_on_decode_EN, pcOdd_decEx, 
          Mux(io.correct_PC === UInt(1), pcOdd_decEx, // Shift down 
          Mux(override_branch, io.exfe.branchPc, // Shift up
          pc_next_Odd))))
@@ -164,7 +164,7 @@ class Fetch(fileName : String) extends Module {
   val pc_next2 =
          // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt + UInt(2),
          Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
-         Mux(io.correct_on_decode_EN, pcEven_feDec, 
+         Mux(io.correct_on_decode_EN, pcEven_decEx, 
          Mux(io.correct_PC === UInt(1), pcEven_decEx,  // Shift down 
          Mux(override_branch, io.exfe.branchPc + UInt(2), // Shift up
          pc_next_Even))))
