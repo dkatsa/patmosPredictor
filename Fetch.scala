@@ -183,15 +183,15 @@ class Fetch(fileName : String) extends Module {
  // Customization 2017 \/\/\/\/\/\/\/
    // when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
    when(!io.ena) {
-      pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
       pcEven_feDec := pcEven_feDec
+      pcOdd_decEx := pcOdd_decEx
       pcOdd_feDec := pcOdd_feDec
    // }.elsewhen(! stall){
    }.otherwise{
-      pcOdd_decEx := pcOdd_feDec
       pcEven_decEx := pcEven_feDec
       pcEven_feDec := pc_cont2
+      pcOdd_decEx := pcOdd_feDec
       pcOdd_feDec := pc_cont
    }
    
