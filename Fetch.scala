@@ -123,7 +123,7 @@ class Fetch(fileName : String) extends Module {
   val instr_a_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrEven, io.icachefe.instrOdd)
   val instr_b_cache = Mux(pcReg(0) === Bits(0), io.icachefe.instrOdd, io.icachefe.instrEven)
 
-  val stall = Reg(init = Bool(false))
+  // val stall = Reg(init = Bool(false))
    
    // Customization 2017 /\/\/\/\/\/\/\
   
@@ -147,7 +147,7 @@ class Fetch(fileName : String) extends Module {
    // val override_doCallRet = Mux((stall_doCallRet || stall_doCallRet2), Bool(false) , io.memfe.doCallRet )
 
    val pc_next_Odd = Mux(io.choose_PC === UInt(1),io.target_out, pc_cont)  
-   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont)
+   val pcOdd_feDec = Reg(init = UInt(1, PC_SIZE) )
    val pcOdd_decEx = Reg(init = UInt(1, PC_SIZE) )
    val pc_next =
          // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt,
@@ -159,7 +159,7 @@ class Fetch(fileName : String) extends Module {
          
   val pc_cont2 = Mux(b_valid, pcReg + UInt(4), pcReg + UInt(3))
   val pc_next_Even = Mux(io.choose_PC === UInt(1),io.target_out + UInt(2), pc_cont2)
-  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE), next = pc_cont2)
+  val pcEven_feDec = Reg(init = UInt(1, PC_SIZE) )
   val pcEven_decEx = Reg(init = UInt(1, PC_SIZE) )
   val pc_next2 =
          // Mux((stall_doCallRet2 && ( ( ! stall_doCallRet ) ) ), icachefe_relPc_stall2.toUInt + UInt(2),
@@ -181,23 +181,29 @@ class Fetch(fileName : String) extends Module {
   val relPc = pcReg - relBaseReg
 
  // Customization 2017 \/\/\/\/\/\/\/
-   when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
+   // when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
+   when(!io.ena) {
       pcOdd_decEx := pcOdd_decEx
       pcEven_decEx := pcEven_decEx
-   }.elsewhen(! stall){
+      pcEven_feDec := pcEven_feDec
+      pcOdd_feDec := pcOdd_feDec
+   // }.elsewhen(! stall){
+   }.otherwise{
       pcOdd_decEx := pcOdd_feDec
       pcEven_decEx := pcEven_feDec
+      pcEven_feDec := pc_cont2
+      pcOdd_feDec := pc_cont
    }
    
    // when (io.memfe.doCallRet){
       // stall_doCallRet := (io.Stall_correct && io.memfe.doCallRet)
    // }
    
-   when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
-      stall := Bool(true)
-   }.elsewhen(io.ena){
-      stall := Bool(false)
-   }
+   // when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
+      // stall := Bool(true)
+   // }.elsewhen(io.ena){
+      // stall := Bool(false)
+   // }
       
    
    
