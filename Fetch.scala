@@ -198,11 +198,11 @@ class Fetch(fileName : String) extends Module {
    // }.elsewhen(! stall){
    }.otherwise{
       pcOdd_decEx := pcOdd_feDec
-      pcOdd_feDec := pcOdd_Mux ////////// MuX
-      // pcOdd_feDec := pc_next ////////// MuX
+      // pcOdd_feDec := pcOdd_Mux ////////// MuX
+      pcOdd_feDec := pc_cont ////////// MuX
       pcEven_decEx := pcEven_feDec
-      pcEven_feDec := pcEven_Mux ////////// MuX
-      // pcEven_feDec := pc_next2 ////////// MuX
+      // pcEven_feDec := pcEven_Mux ////////// MuX
+      pcEven_feDec := pc_cont2 ////////// MuX
    }
    
    // when (io.memfe.doCallRet){
