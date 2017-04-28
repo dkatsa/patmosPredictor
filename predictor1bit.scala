@@ -20,6 +20,9 @@ class predictor1bit() extends Module {
       val memfe = new MemFe().asInput
       // Stall correct
       val flush = Bool(INPUT)
+      // NonDelayed Comands
+      val decex_jmpOp_branch := Bool(INPUT)
+      val decex_nonDelayed := Bool(INPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
@@ -111,9 +114,11 @@ class predictor1bit() extends Module {
  
 //####### Fetch ###############################################################
 
+       
 //####### Decode ##############################################################
    
-   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) && io.ena && (! io.flush)){
+   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) 
+           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
