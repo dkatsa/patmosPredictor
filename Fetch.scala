@@ -173,12 +173,10 @@ class Fetch(fileName : String) extends Module {
   
   val pcOdd_Mux = Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt,
                   Mux(io.correct_on_decode_EN, pcOdd_decEx, 
-                  Mux(io.correct_PC === UInt(1), pcOdd_decEx,
-                       ,pc_cont)))
+                  Mux(io.correct_PC === UInt(1), pcOdd_decEx, pc_cont)))
   val pcEven_Mux = Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2),
                    Mux(io.correct_on_decode_EN, pcEven_decEx, 
-                   Mux(io.correct_PC === UInt(1), pcEven_decEx, 
-                       ,pc_cont2)))
+                   Mux(io.correct_PC === UInt(1), pcEven_decEx, pc_cont2)))
   
   addrEven := addrEvenReg
   addrOdd := addrOddReg
