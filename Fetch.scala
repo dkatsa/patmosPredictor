@@ -170,6 +170,10 @@ class Fetch(fileName : String) extends Module {
          pc_next_Even))))
 
   val pc_inc = Mux(pc_next(0), pc_next2, pc_next)
+  
+  val pcOdd_Mux = Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt, pc_cont)
+  val pcEven_Mux = Mux(io.memfe.doCallRet, io.icachefe.relPc.toUInt + UInt(2) ,pc_cont2)
+  
   addrEven := addrEvenReg
   addrOdd := addrOddReg
   when(io.ena && !reset) {
@@ -183,16 +187,16 @@ class Fetch(fileName : String) extends Module {
  // Customization 2017 \/\/\/\/\/\/\/
    // when( (!io.ena) && (io.correct_PC === UInt(1)) ) {
    when(!io.ena) {
-      pcEven_decEx := pcEven_decEx
-      pcEven_feDec := pcEven_feDec
       pcOdd_decEx := pcOdd_decEx
       pcOdd_feDec := pcOdd_feDec
+      pcEven_decEx := pcEven_decEx
+      pcEven_feDec := pcEven_feDec
    // }.elsewhen(! stall){
    }.otherwise{
-      pcEven_decEx := pcEven_feDec
-      pcEven_feDec := pc_cont2
       pcOdd_decEx := pcOdd_feDec
-      pcOdd_feDec := pc_cont
+      pcOdd_feDec := pcOdd_Mux ////////// MuX
+      pcEven_decEx := pcEven_feDec
+      pcEven_feDec := pcEven_Mux ////////// MuX
    }
    
    // when (io.memfe.doCallRet){
