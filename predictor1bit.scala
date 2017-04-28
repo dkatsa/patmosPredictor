@@ -21,8 +21,8 @@ class predictor1bit() extends Module {
       // Stall correct
       val flush = Bool(INPUT)
       // NonDelayed Comands
-      val decex_jmpOp_branch := Bool(INPUT)
-      val decex_nonDelayed := Bool(INPUT)
+      val decex_jmpOp_branch = Bool(INPUT)
+      val decex_nonDelayed = Bool(INPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
