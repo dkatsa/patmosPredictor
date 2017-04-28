@@ -92,6 +92,8 @@ class PatmosCore(binFile: String) extends Module {
   pythia.io.isBranch_Dec <> decode.io.isOneOfTheBranches
   pythia.io.exfe <> execute.io.exfe
   pythia.io.memfe <> memory.io.memfe // We call in MEM
+  pythia.io.decex_jmpOp_branch <> decode.io.decex.jmpOp.branch
+  pythia.io.decex_nonDelayed <> decode.io.decex.nonDelayed
   
   // Outputs
   fetch.io.prex <> pythia.io.pr_ex
