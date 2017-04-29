@@ -36,7 +36,7 @@ class predictor1bit() extends Module {
    io.pr_ex.defaults()
    
    // Constant ADDRESSES
-   val ADDR = 1 << PREDICTOR_INDEX // in VHDL : 2 ** PREDICTOR_INDEX - 1  => 2**6 = 64
+   val ADDR = 1 << PREDICTOR_INDEX // 2 ** PREDICTOR_INDEX - 1  => 2**6 = 64
    val MSB = PC_SIZE - PREDICTOR_INDEX
    val PREDICTOR_INDEX_ONE = PREDICTOR_INDEX - 1
    val PC_SIZE_ONE = PC_SIZE - 1
@@ -119,7 +119,8 @@ class predictor1bit() extends Module {
    
    when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(2,2) || predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(3,2))
            && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) 
-           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)){
+           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)
+           && (targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) =/= UInt(0,PC_SIZE))){  // Avoid target with Zero
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
@@ -134,42 +135,42 @@ class predictor1bit() extends Module {
    when(io.ena){
       when( isBranch_Ex && io.exfe.doBranch && !found_Ex){
          PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
+         targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          when(predictor_Ex === UInt(1,2)){
-            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(2,2)
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(3,2)
          }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
             predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
          }
-         targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       // Else there is inside the memory and it misspredict.  
       }.otherwise{ 
          when( isBranch_Ex && found_Ex && choose_PC_Ex && (! io.exfe.doBranch)) {
+            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
             when(predictor_Ex === UInt(2,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(2,2)
+               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,2)
             }.elsewhen(predictor_Ex === UInt(1,2) || predictor_Ex === UInt(3,2)){
                   predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(1,2)
             }
-            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
-         }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) { // Maybe remove it!
+         }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) { // Maybe remove it! Maybe is the proper predict.
+            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX) // ??????????
             when(predictor_Ex === UInt(1,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(2,2)
+               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(3,2)
             }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
                predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
             }
-            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
          
          // Different Target with the predicted one 
-         when( isBranch_Ex && found_Ex && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex )){
+         when( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex )){
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
       when(correct_on_decode && (choose_PC_Dec && (! io.flush) && (! io.exfe.doBranch))){
+         PC_BTB(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
          when(predictor_Dec === UInt(2,2)){
-            predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := predictor_Dec - UInt(2,2)
+            predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,2)
          }.elsewhen(predictor_Dec === UInt(1,2) || predictor_Dec === UInt(3,2)){
             predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := predictor_Dec - UInt(1,2)
          }
-         PC_BTB(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
       }      
    }
    
