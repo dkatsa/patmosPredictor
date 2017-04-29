@@ -145,7 +145,7 @@ class predictor1bit() extends Module {
                predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(1,2)
             }
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
-         }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) ){ // Maybe remove it!
+         }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) { // Maybe remove it!
             predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
