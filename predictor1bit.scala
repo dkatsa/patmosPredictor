@@ -134,19 +134,27 @@ class predictor1bit() extends Module {
    when(io.ena){
       when( isBranch_Ex && io.exfe.doBranch && !found_Ex){
          PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
-         when(predictor_Ex =/= UInt(3,2)){
+         when(predictor_Ex === UInt(1,2)){
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(2,2)
+         }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
             predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
          }
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
       // Else there is inside the memory and it misspredict.  
       }.otherwise{ 
          when( isBranch_Ex && found_Ex && choose_PC_Ex && (! io.exfe.doBranch)) {
-            when(predictor_Ex =/= UInt(0,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(1,2)
+            when(predictor_Ex === UInt(2,2)){
+               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(2,2)
+            }.elsewhen(predictor_Ex === UInt(1,2) || predictor_Ex === UInt(3,2)){
+                  predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(1,2)
             }
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
          }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) { // Maybe remove it!
-            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
+            when(predictor_Ex === UInt(1,2)){
+               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(2,2)
+            }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
+               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
+            }
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
          
@@ -156,7 +164,9 @@ class predictor1bit() extends Module {
          }
       }
       when(correct_on_decode && (choose_PC_Dec && (! io.flush) && (! io.exfe.doBranch))){
-         when(predictor_Dec =/= UInt(0,2)){
+         when(predictor_Dec === UInt(2,2)){
+            predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := predictor_Dec - UInt(2,2)
+         }.elsewhen(predictor_Dec === UInt(1,2) || predictor_Dec === UInt(3,2)){
             predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := predictor_Dec - UInt(1,2)
          }
          PC_BTB(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
