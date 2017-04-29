@@ -44,7 +44,7 @@ class predictor1bit() extends Module {
    //    The main memory 
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
-   val predictor = Vec.fill(ADDR) { Reg(init = UInt(1,width=2) ) } // Store predictor # 1
+   val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
    
    
 //####### Decode #########################################################################
@@ -53,9 +53,9 @@ class predictor1bit() extends Module {
    val PC_Dec = Reg(init = UInt(0,PC_SIZE) )
    val PC_BTB_Dec = Reg(init = UInt(0,width=MSB) )  // Store PC
    val targetPC_Reg_Dec = Reg(init = UInt(0,width=PC_SIZE) )  // Store target_PC
-   val predictor_Dec_Res = Reg(init = UInt(0,width=2) )  // Store predictor
+   val predictor_Dec_Res = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    //Forwarding ... When a choose happened , on decode, check the state of the overrides
-   val predictor_Dec = Mux(io.exfe.doBranch && (! io.pr_ex.override_brflush) && (!io.pr_ex.override_brflush_value) && io.ena ,UInt(0,2), predictor_Dec_Res) /// 2bit change value
+   val predictor_Dec = Mux(io.exfe.doBranch && (! io.pr_ex.override_brflush) && (!io.pr_ex.override_brflush_value) && io.ena ,UInt(0), predictor_Dec_Res)
    // Delay doCallRet
    
    val choose_PC_Dec = Reg(init = Bool(false) )
@@ -71,7 +71,7 @@ class predictor1bit() extends Module {
    val PC_Ex = Reg(init = UInt(0,PC_SIZE) )
    val targetPC_Reg_Ex = Reg(init = UInt(0,width=PC_SIZE) )  // Store target_PC in Execute
    val isBranch_Ex = Reg(init = Bool(false) )
-   val predictor_Ex = Reg(init = UInt(0,width=2) )  // Store predictor
+   val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    
    
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,10 +117,8 @@ class predictor1bit() extends Module {
        
 //####### Decode ##############################################################
    
-   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(2,2) || predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(3,2))
-           && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) 
-           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)
-           && (targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) =/= UInt(0,PC_SIZE))){  // Avoid target with Zero
+   when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) 
+           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
@@ -135,46 +133,30 @@ class predictor1bit() extends Module {
    when(io.ena){
       when( isBranch_Ex && io.exfe.doBranch && !found_Ex){
          PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
+         predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
          targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
-         when(predictor_Ex === UInt(1,2)){
-            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(3,2)
-         }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
-            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
-         }
       // Else there is inside the memory and it misspredict.  
       }.otherwise{ 
-         when( isBranch_Ex && found_Ex && choose_PC_Ex && (! io.exfe.doBranch)) {
+         when( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(1)) && (! io.exfe.doBranch)) ){
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0)
             PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
-            when(predictor_Ex === UInt(2,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(0,2)
-            }.elsewhen(predictor_Ex === UInt(1,2) || predictor_Ex === UInt(3,2)){
-                  predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex - UInt(1,2)
-            }
-         }.elsewhen( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch) { // Maybe remove it! Maybe is the proper predict.
-            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX) // ??????????
-            when(predictor_Ex === UInt(1,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(3,2)
-            }.elsewhen(predictor_Ex === UInt(0,2) || predictor_Ex === UInt(2,2)){
-               predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := predictor_Ex + UInt(1,2)
-            }
+         }.elsewhen( isBranch_Ex && found_Ex && ((predictor_Ex === UInt(0)) && io.exfe.doBranch) ){ // Maybe remove it!
+            predictor(PC_Ex(PREDICTOR_INDEX_ONE,0)) := UInt(1)
+            PC_BTB(PC_Ex(PREDICTOR_INDEX_ONE,0)) := PC_Ex(PC_SIZE_ONE,PREDICTOR_INDEX)
          }
          
          // Different Target with the predicted one 
-         when( isBranch_Ex && found_Ex && choose_PC_Ex && io.exfe.doBranch && (io.exfe.branchPc =/= targetPC_Reg_Ex )){
+         when( isBranch_Ex && found_Ex && io.exfe.doBranch ){
             targetPC_Reg(PC_Ex(PREDICTOR_INDEX_ONE,0)) := io.exfe.branchPc
          }
       }
       when(correct_on_decode && (choose_PC_Dec && (! io.flush) && (! io.exfe.doBranch))){
+         predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0)
          PC_BTB(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,MSB)
-         when(predictor_Dec === UInt(2,2)){
-            predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := UInt(0,2)
-         }.elsewhen(predictor_Dec === UInt(1,2) || predictor_Dec === UInt(3,2)){
-            predictor(PC_Dec(PREDICTOR_INDEX_ONE,0)) := predictor_Dec - UInt(1,2)
-         }
       }      
    }
    
-   when((found_Ex && (predictor_Ex === UInt(3,2) || predictor_Ex === UInt(2,2)) && choose_PC_Ex ) || (correct_on_decode && (choose_PC_Dec && (! io.flush) )&& (! io.exfe.doBranch) ) ){
+   when((found_Ex && (predictor_Ex === UInt(1)) && choose_PC_Ex ) || (correct_on_decode && (choose_PC_Dec && (! io.flush) )&& (! io.exfe.doBranch) ) ){
       when( io.exfe.doBranch){
         when( io.exfe.branchPc =/= targetPC_Reg_Ex ){ // Check if we predict with different target.
            io.pr_ex.override_brflush := Bool(false) 
@@ -192,7 +174,7 @@ class predictor1bit() extends Module {
       io.pr_ex.override_brflush_value := Bool(false) 
    }
    
-   when( (found_Ex && (! io.exfe.doBranch) && choose_PC_Ex )|| (correct_on_decode && (choose_PC_Dec && (! io.flush) )&& (! io.exfe.doBranch) )) {
+   when( (found_Ex && (! io.exfe.doBranch) && (predictor_Ex === UInt(1)) && choose_PC_Ex )|| (correct_on_decode && (choose_PC_Dec && (! io.flush) )&& (! io.exfe.doBranch) )) {
       io.correct_PC := UInt(1) 
    }.otherwise{
       io.correct_PC := UInt(0)
@@ -202,4 +184,21 @@ class predictor1bit() extends Module {
    
    
 }
+
+
+
+
+// FSM
+  
+// val s_idle :: s_5 :: s_10 :: s_15 :: s_ok :: Nil = Enum(5){ UFix() } // Count the Enums !!!!!!!!
+// val state = Reg(init = s_idle)
+  
+// when ( state === s_idle ){
+   // when(  ) {
+   // }
+// }
+  
+  
+  
+  
   
