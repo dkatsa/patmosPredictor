@@ -23,6 +23,7 @@ class predictor1bit() extends Module {
       // NonDelayed Comands
       val decex_jmpOp_branch = Bool(INPUT)
       val decex_nonDelayed = Bool(INPUT)
+      val decex_call = Bool(INPUT)
       
       def defaults() = {
          choose_PC := UInt(0)
@@ -45,7 +46,6 @@ class predictor1bit() extends Module {
    val PC_BTB = Vec.fill(ADDR) { Reg(UInt(width=MSB)) } // Store PC     # 30-6 = 24
    val targetPC_Reg = Vec.fill(ADDR) { Reg(UInt(width=PC_SIZE)) } // Store target_PC # 30
    val predictor = Vec.fill(ADDR) { Reg(UInt(width=PREDICTOR_WIDTH)) } // Store predictor # 1
-   
    
 //####### Decode #########################################################################
    // Find inside BTB the respective PC 
@@ -73,9 +73,19 @@ class predictor1bit() extends Module {
    val isBranch_Ex = Reg(init = Bool(false) )
    val predictor_Ex = Reg(init = UInt(0,width=PREDICTOR_WIDTH) )  // Store predictor
    
+   val counter = Reg(init = UInt(0,2))
+   // val flagCall = Reg(init = Bool(false))
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+   when(io.decex_call && io.ena){
+      counter := UInt(1,2)
+   }.elsewhen(counter =/= UInt(0,2)){
+      counter := counter + UInt(1,2)
+   }
    
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
+
+
 //####### Stall with enable closed ############################################
  
    // Those are the nexts of all the Flip-Flops
@@ -118,7 +128,7 @@ class predictor1bit() extends Module {
 //####### Decode ##############################################################
    
    when ( (predictor(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === UInt(1)) && (PC_BTB(io.PC_Fe(PREDICTOR_INDEX_ONE,0)) === io.PC_Fe(PC_SIZE_ONE,PREDICTOR_INDEX)) 
-           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush)){
+           && (!(io.decex_jmpOp_branch && (! io.decex_nonDelayed))) && io.ena && (! io.flush) && (counter === UInt(0))){
       io.choose_PC := UInt(1)
       io.target_out := targetPC_Reg(io.PC_Fe(PREDICTOR_INDEX_ONE,0))
    }.otherwise{ 
