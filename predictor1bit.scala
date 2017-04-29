@@ -78,7 +78,7 @@ class predictor1bit() extends Module {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-   when(io.decex_call && io.ena){
+   when((io.decex_call || io.memfe.doCallRet) && io.ena ){
       counter := UInt(1,2)
    }.elsewhen(counter =/= UInt(0,2)){
       counter := counter + UInt(1,2)
